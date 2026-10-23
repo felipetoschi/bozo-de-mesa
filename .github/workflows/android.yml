@@ -68,8 +68,21 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         run: |
           if [ "$HAS_KEY" = "true" ]; then
-            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
-            export KEYSTORE_FILE="$RUNNER_TEMP/upload.jks"
+            # Tira espaços e quebras de linha que entram sem querer ao colar os segredos
+            printf %s "$KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > "$RUNNER_TEMP/upload.jks" 2>/dev/null || true
+            KEYSTORE_PASSWORD="$(printf %s "$KEYSTORE_PASSWORD" | tr -d '\r\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+            export KEYSTORE_PASSWORD KEYSTORE_FILE="$RUNNER_TEMP/upload.jks"
+            # Confere a chave antes de compilar e diz qual segredo está errado (sem mostrar nenhum dos dois)
+            # O arquivo da chave precisa estar inteiro (dá para conferir sem a senha)
+            if [ "$(head -c 4 "$KEYSTORE_FILE" | od -An -tx1 | tr -d ' \n')" != "feedfeed" ] || ! printf '\n' | keytool -list -keystore "$KEYSTORE_FILE" >/dev/null 2>&1; then
+              echo "::error::O segredo KEYSTORE_BASE64 não está certo. Abra o arquivo bozo-upload.jks.base64.txt no Bloco de Notas, copie TODO o texto (Ctrl+A, Ctrl+C) e cole de novo no segredo."
+              exit 1
+            fi
+            if ! keytool -list -keystore "$KEYSTORE_FILE" -storepass "$KEYSTORE_PASSWORD" -alias bozo >/dev/null 2>&1; then
+              echo "::error::A senha no segredo KEYSTORE_PASSWORD não confere com a chave. Copie de novo só a senha do arquivo LEIA-CHAVE.txt (sem espaços antes ou depois) e atualize o segredo."
+              exit 1
+            fi
+            echo "Chave conferida: arquivo e senha corretos."
           fi
           ./gradlew --no-daemon assembleRelease bundleRelease
           rm -f "$RUNNER_TEMP/upload.jks"
