@@ -39,12 +39,15 @@ O app não carrega o `@capacitor/core` no JS: para falar com o Android use `wind
 - Exportar: imagem do resultado (WhatsApp direto no app), texto, planilha .csv (navegador). Lembrete de exportar antes de zerar.
 - Cartela minimalista "papel e caneta" (linhas riscadas à mão, letra Caveat).
 
-## O que falta para fechar a versão 1.0
+## Situação da versão 1.0
 
-1. **Ligar o GitHub Pages** (Settings → Pages → Source: GitHub Actions) e rodar o workflow "Site" — só o dono pode fazer.
-2. **Segredos da chave** `KEYSTORE_BASE64` e `KEYSTORE_PASSWORD` neste repositório (instruções no `LEIA-CHAVE.txt`, que o dono guarda — a chave **nunca** vai para o repositório). Depois, rodar "App Android" com "publicar" e conferir o APK assinado em Releases (o passo de assinatura ainda não rodou de verdade).
-3. **Decidir a distribuição**: só entre amigos (link + APK) ou também Play Store (ver `PUBLICAR.md`). Recomendação já dada: publicar grátis e sem anúncios primeiro; anúncio intersticial no fim da partida só numa atualização futura.
-4. Opcional: número da versão visível no app; capturas da loja atualizadas (sem o marcador e a exportação).
+- ✅ GitHub Pages ligado: jogo, `privacidade.html` e `bozo-de-mesa.html` no ar.
+- ✅ Segredos da chave criados; APK assinado publicado em Releases (`v1.0.4` foi a primeira). O workflow confere a chave antes de assinar e diz qual segredo está errado.
+- Para soltar uma versão nova para os amigos: Actions → App Android → Run workflow com "publicar" marcado.
+
+Falta decidir/fazer (só se o dono pedir):
+1. **Play Store** (ver `PUBLICAR.md`, passos 3 a 7). Recomendação já dada: publicar grátis e sem anúncios primeiro; anúncio intersticial no fim da partida só numa atualização futura.
+2. Opcional: número da versão visível no app; capturas da loja atualizadas (sem o marcador e a exportação).
 
 O projeto começou num branch do repositório de perfil `felipetoschi/felipetoschi` (`ccr-ee8ee3ac-gefrkk`); este repositório é a continuação com histórico novo.
 
