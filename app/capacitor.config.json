@@ -1,0 +1,20 @@
+{
+  "appId": "com.felipetoschi.bozodemesa",
+  "appName": "Bozó de Mesa",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#5a3518"
+  },
+  "plugins": {
+    "SystemBars": {
+      "hidden": true,
+      "insetsHandling": "native",
+      "style": "DARK"
+    },
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "launchShowDuration": 600,
+      "backgroundColor": "#1f5a3a"
+    }
+  }
+}

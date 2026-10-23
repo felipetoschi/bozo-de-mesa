@@ -1,0 +1,8 @@
+Fontes usadas no Bozó de Mesa (subconjunto latino, baixado do Google Fonts):
+
+- Alfa Slab One — Copyright JM Solé. Licença SIL Open Font License 1.1.
+- Caveat — Copyright The Caveat Project Authors. Licença SIL Open Font License 1.1.
+- Nunito — Copyright The Nunito Project Authors. Licença SIL Open Font License 1.1.
+
+A licença SIL OFL 1.1 permite usar, embutir e distribuir as fontes junto com o
+aplicativo: https://openfontlicense.org

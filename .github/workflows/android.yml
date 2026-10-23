@@ -1,0 +1,105 @@
+# Compila o app Android do Bozó de Mesa.
+# - Sempre gera um APK de teste (para instalar direto no celular).
+# - Se os segredos KEYSTORE_BASE64 e KEYSTORE_PASSWORD existirem, gera também, assinados com a sua chave:
+#   o APK para os amigos (atualiza por cima sem perder o placar) e o AAB para a Play Store.
+# - Rodando à mão (Actions → App Android → Run workflow) com "publicar" marcado, cria uma versão em
+#   Releases com o APK assinado: o link de download para os amigos.
+# Os arquivos ficam em Actions → (compilação) → Artifacts.
+name: App Android
+
+on:
+  push:
+    paths:
+      - "app/**"
+      - ".github/workflows/android.yml"
+  workflow_dispatch:
+    inputs:
+      publicar:
+        description: "Publicar o APK assinado em Releases (link para os amigos)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      VERSION_CODE: ${{ github.run_number }}
+      HAS_KEY: ${{ secrets.KEYSTORE_BASE64 != '' && secrets.KEYSTORE_PASSWORD != '' }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Instalar dependências e copiar o jogo para o projeto Android
+        working-directory: app
+        run: |
+          npm ci
+          npx cap sync android
+
+      - name: APK de teste
+        working-directory: app/android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: bozo-de-mesa-teste-${{ github.run_number }}
+          path: app/android/app/build/outputs/apk/debug/*.apk
+
+      # Sempre compila a versão final, para pegar erros cedo; só é assinada (e enviada) quando a chave existe
+      - name: Versão final (APK e AAB)
+        working-directory: app/android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          if [ "$HAS_KEY" = "true" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+            export KEYSTORE_FILE="$RUNNER_TEMP/upload.jks"
+          fi
+          ./gradlew --no-daemon assembleRelease bundleRelease
+          rm -f "$RUNNER_TEMP/upload.jks"
+          if [ "$HAS_KEY" = "true" ]; then
+            cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/bozo-de-mesa.apk"
+          fi
+
+      - if: env.HAS_KEY == 'true'
+        uses: actions/upload-artifact@v5
+        with:
+          name: bozo-de-mesa-${{ github.run_number }}
+          path: ${{ runner.temp }}/bozo-de-mesa.apk
+
+      - if: env.HAS_KEY == 'true'
+        uses: actions/upload-artifact@v5
+        with:
+          name: bozo-de-mesa-play-store-${{ github.run_number }}
+          path: app/android/app/build/outputs/bundle/release/*.aab
+
+      - name: Publicar em Releases
+        if: env.HAS_KEY == 'true' && github.event_name == 'workflow_dispatch' && inputs.publicar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v1.0.${{ github.run_number }}" "$RUNNER_TEMP/bozo-de-mesa.apk" \
+            --repo "${{ github.repository }}" --target "${{ github.sha }}" --latest \
+            --title "Bozó de Mesa 1.0.${{ github.run_number }}" \
+            --notes 'Baixe o arquivo bozo-de-mesa.apk e abra no celular Android para instalar ou atualizar (o placar salvo é mantido).'
+
+
+      - name: Aviso sobre a chave
+        if: env.HAS_KEY != 'true'
+        run: echo "::notice::Sem os segredos KEYSTORE_BASE64 e KEYSTORE_PASSWORD, só o APK de teste foi enviado (sem APK assinado, AAB nem publicação). Veja PUBLICAR.md."

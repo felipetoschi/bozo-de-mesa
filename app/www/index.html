@@ -1,0 +1,1070 @@
+<!doctype html><html lang="pt-BR"><head><meta charset=utf8><meta name="theme-color" content="#1f5a3a"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Bozó de Mesa</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Fontes guardadas junto com o jogo, para funcionar sem internet (licença SIL OFL, ver fonts/LEIAME.txt) */
+@font-face{font-family:"Alfa Slab One";font-weight:400;font-display:swap;src:url(fonts/alfa-slab-one.woff2) format("woff2")}
+@font-face{font-family:"Caveat";font-weight:400 700;font-display:swap;src:url(fonts/caveat.woff2) format("woff2")}
+@font-face{font-family:"Nunito";font-weight:200 1000;font-display:swap;src:url(fonts/nunito.woff2) format("woff2")}
+</style>
+<style>
+/* Layout: o tablet é a mesa. Copo e dados no meio; a cartela de cada jogador fica na borda, virada para quem está sentado ali. Visual único: feltro verde de mesa de bar com borda de madeira. */
+:root{
+  --felt:#1f5a3a; --felt2:#2b7a4f; --wood:#5a3518; --wood2:#8a5426; --paper:#fbf5e6; --ink:#24170e; --gold:#f0b93a; --red:#b3202f; --muted:#cfe3d6;--pen:#23306b;--pencil:#a39a8c;--hand:"Caveat","Comic Sans MS",cursive; --line:#ffffff26;
+  --display:"Alfa Slab One",Georgia,serif;
+  --body:"Nunito",system-ui,sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--wood);color:var(--paper);font-family:var(--body);
+  padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px));padding-block:10px;box-sizing:border-box}
+button{font-family:var(--body);cursor:pointer;-webkit-tap-highlight-color:transparent}
+/* O copo nunca mostra moldura ao ser tocado; no teclado ele só brilha no formato do copo */
+#roll,#roll:focus,#roll:focus-visible,#roll:active{outline:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+#roll:focus-visible{filter:drop-shadow(0 0 6px var(--gold))}
+.die:focus:not(:focus-visible){outline:none}
+button:focus-visible,input:focus-visible,.cell:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.mesa{min-height:100%;box-sizing:border-box;border-radius:28px;background:radial-gradient(ellipse at 50% 50%,var(--felt2),var(--felt) 75%);
+  box-shadow:inset 0 0 0 10px var(--wood2),inset 0 0 0 14px #0004,inset 0 0 60px #0008;padding:24px}
+
+/* ---------- Tela inicial ---------- */
+#setup{display:flex;flex-direction:column;gap:18px;align-items:center;justify-content:center;text-align:center;min-height:calc(100vh - 68px)}
+h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-size:clamp(32px,6vw,52px);text-shadow:0 3px 0 #0007}
+#setup p{margin:0;color:var(--muted);font-size:18px}
+.count{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.count button{width:68px;height:68px;border-radius:16px;border:2px solid var(--line);background:#0003;color:var(--paper);font-family:var(--display);font-size:30px}
+.count button[aria-pressed="true"]{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+.names{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;width:min(100%,680px)}
+.names .pl{display:flex;flex-direction:column;gap:4px;text-align:left}
+.names label{font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.plrow{display:flex;gap:6px}
+.names input{flex:1;font:inherit;font-size:17px;padding:10px 12px;border-radius:10px;border:2px solid var(--line);background:#0003;color:var(--paper);min-width:0}
+.kind{flex:none;border:2px solid var(--line);background:#0003;color:var(--paper);border-radius:10px;padding:0 10px;font-weight:800;font-size:14px}
+.kind[aria-pressed="true"]{border-color:var(--gold);color:var(--gold)}
+.vsbot{border:2px solid var(--gold);background:none;color:var(--gold);border-radius:14px;padding:10px 20px;font-weight:900;font-size:16px}
+.big{border:none;border-radius:14px;background:var(--gold);color:var(--ink);font-family:var(--display);font-size:22px;padding:14px 34px;box-shadow:0 5px 0 #a87a1e}
+.big:active{transform:translateY(3px);box-shadow:0 2px 0 #a87a1e}
+.big:disabled{opacity:.45;cursor:default;transform:none;box-shadow:0 5px 0 #a87a1e}
+
+/* ---------- Mesa de jogo ---------- */
+/* Mesa em volta: cartelas em cima, embaixo e nas laterais, dados sempre no meio */
+#game{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr) auto auto;
+  grid-template-areas:". top ." "left center right" ". bottom ." "tools tools tools";gap:10px;min-height:calc(100vh - 68px);min-height:calc(100dvh - 68px);
+  /* As cartelas medem pela largura e pela altura da tela, para a mesa inteira caber sem rolar */
+  --cw:clamp(140px,min(28vw,calc((100vh - 430px) / 1.7)),250px);--cw:clamp(140px,min(28vw,calc((100dvh - 430px) / 1.7)),250px);--ch:calc(var(--cw) * .85)}
+.area{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap}
+.area.top{grid-area:top}.area.bottom{grid-area:bottom}
+.area.left{grid-area:left;flex-direction:column}.area.right{grid-area:right;flex-direction:column}
+.slot{position:relative;flex:none;width:var(--cw);height:var(--ch)}
+.slot.left,.slot.right{width:var(--ch);height:var(--cw)}
+.slot.top{--r:180deg}.slot.left{--r:90deg}.slot.right{--r:-90deg}
+
+.seat{background:var(--paper);color:var(--ink);border-radius:5px;padding:10px;width:min(100%,290px);box-shadow:0 8px 18px #0007;transition:box-shadow .25s,transform .25s;min-width:0}
+.seat.cur{box-shadow:0 0 0 4px var(--gold),0 0 28px #f0b93a99}
+.seathead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px;padding:0 4px}
+.seathead b{font-family:var(--hand);font-weight:700;color:var(--pen);font-size:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.seathead .wins{font-style:normal;font-weight:800;font-size:15px;color:#9b8c78;padding:2px 9px;margin-left:auto;font-variant-numeric:tabular-nums;white-space:nowrap}
+.seathead span{font-family:var(--hand);font-weight:700;font-size:22px;color:var(--pen);border-bottom:2px solid var(--pen);border-radius:0 0 40% 60%/0 0 6px 4px;padding:0 4px;line-height:1}
+.seat.cur .seathead b::before{content:"🎲 "}
+/* Cartela do bozó: folha de papel, só as linhas de dentro, riscadas à mão com caneta */
+.sheet{display:grid;grid-template-columns:repeat(3,1fr);position:relative}
+.sheet .lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.sheet .lines path{fill:none;stroke:var(--pen);stroke-width:2.2;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:.85}
+.cell{border:none;min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3px 2px;line-height:1;background:none;font:inherit;color:inherit}
+.cell small{font-size:10px;font-weight:700;color:#9b8c78;text-transform:uppercase;letter-spacing:.6px}
+.cell b{font-family:var(--hand);font-size:19px;font-weight:700;color:var(--pen);min-height:20px;position:relative}
+.cell.prev{cursor:pointer}
+.cell.prev b{color:var(--pencil);font-weight:500}
+.cell.prev.sel b{color:var(--pen);font-weight:700}
+/* Casa escolhida: circulada à caneta */
+.cell.prev.sel b::after{content:"";position:absolute;inset:-3px -9px -1px;border:2px solid var(--pen);border-radius:52% 46% 55% 44%/48% 56% 44% 52%;transform:rotate(-6deg)}
+
+.center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding-block:6px}
+.who{font-family:var(--display);font-size:clamp(20px,3vw,28px);color:var(--gold);text-shadow:0 2px 0 #0007;text-align:center}
+.who small{display:block;font-family:var(--body);font-weight:800;font-size:12px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;text-shadow:none}
+.play{display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap}
+#roll{width:120px;height:130px;border:none;background:none;padding:0;position:relative;flex:none}
+.cup{position:absolute;inset:0;background:linear-gradient(90deg,#3d1f0c,#9a5c2a 42%,#5a3317 80%);clip-path:polygon(12% 0,88% 0,100% 100%,0 100%);display:flex;align-items:center;justify-content:center;color:var(--paper);font-family:var(--display);font-size:19px;text-shadow:0 2px 0 #0009}
+.cup::before,.cup::after{content:"";position:absolute;left:8%;right:8%;height:7px;background:#0004;border-radius:4px}
+.cup::before{top:12px;left:14%;right:14%}
+.cup::after{bottom:14px}
+#roll.shake .cup{animation:shake .09s linear infinite}
+@keyframes shake{0%{transform:rotate(-10deg) translateX(-5px)}50%{transform:rotate(10deg) translateX(5px)}100%{transform:rotate(-10deg) translateX(-5px)}}
+#roll:disabled .cup{filter:grayscale(.7) brightness(.65)}
+.side{display:flex;flex-direction:column;align-items:center;gap:10px}
+.dice{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.die{width:clamp(50px,7vw,66px);aspect-ratio:1;max-width:100%;border:none;padding:0;background:none;border-radius:14px;transition:transform .2s,filter .2s;filter:drop-shadow(0 5px 0 #0005)}
+.die svg{display:block;width:100%;height:100%}
+.die.idle{opacity:.4}
+.die.held{transform:translateY(-10px);filter:drop-shadow(0 0 0 var(--gold)) drop-shadow(0 0 6px var(--gold)) drop-shadow(0 10px 6px #0007)}
+.die.held svg rect{stroke:var(--gold);stroke-width:6}
+.die.tumble{animation:tumble .16s linear infinite}
+@keyframes tumble{25%{transform:rotate(16deg) translateY(-6px)}75%{transform:rotate(-14deg) translateY(3px)}}
+.die.land{animation:land .3s ease-out}
+@keyframes land{0%{transform:translateY(-14px) rotate(12deg)}70%{transform:translateY(2px)}100%{transform:none}}
+#baixo{border:2px solid var(--gold);background:#0004;color:var(--gold);border-radius:12px;padding:6px 12px;font-weight:900;font-size:14px;min-height:36px}
+#baixo:disabled{opacity:.35;cursor:default}
+#baixo.used{background:var(--gold);color:var(--ink)}
+.die.flip{animation:flip .45s ease-in-out}
+@keyframes flip{0%{transform:rotateX(0)}50%{transform:rotateX(90deg) translateY(-10px)}100%{transform:rotateX(0)}}
+#rollsLeft{color:var(--muted);font-weight:800;font-size:14px}
+#hint{min-height:22px;margin:0;text-align:center;font-weight:700;max-width:40ch}
+#hint.flash{color:var(--gold);font-family:var(--display);font-weight:400;font-size:24px}
+#mark{font-size:18px;padding:12px 22px}
+.tools{grid-area:tools;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.tools button{border:1px solid var(--line);background:#0003;color:var(--muted);border-radius:10px;padding:8px 12px;font-weight:800;min-height:40px}
+
+/* Regras e fim */
+.overlay{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;z-index:20;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.box{background:var(--paper);color:var(--ink);border-radius:20px;padding:24px;width:min(100%,460px);max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:14px;text-align:center;box-sizing:border-box}
+.box h2{font-family:var(--display);font-weight:400;margin:0;font-size:30px;color:var(--felt)}
+.box p{margin:0}
+.box ul{text-align:left;margin:0;padding-left:20px;line-height:1.5}
+.box ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.box li.r{display:flex;flex-direction:column;gap:2px;padding:8px 12px;border-radius:10px;background:#1f5a3a14;font-weight:800;font-variant-numeric:tabular-nums;text-align:left}
+.box li.r.win{background:var(--gold)}
+.box li.r .rl{display:flex;justify-content:space-between;gap:10px}
+.box li.r small{font-weight:700;font-size:12px;color:#5f4a38}
+.btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.ghost{border:2px solid var(--felt);background:none;color:var(--felt);border-radius:14px;padding:12px 18px;font-weight:900;font-size:16px}
+/* Tamanhos compactos para caber todos em volta da mesa */
+.center{grid-area:center;min-width:0;gap:8px}
+.slot .seat{position:absolute;left:50%;top:50%;width:var(--cw);height:var(--ch);box-sizing:border-box;padding:8px;transform:translate(-50%,-50%) rotate(var(--r,0deg))}
+.seathead{margin-bottom:6px;height:24px;align-items:center}
+.seathead b{font-size:16px}
+.seathead span{font-size:18px}
+.seathead .wins{font-size:12px;padding:1px 7px}
+.sheet{grid-template-rows:repeat(4,1fr);height:calc(100% - 30px);box-sizing:border-box}
+.cell{min-height:0;padding:0 3px;gap:0;overflow:hidden;justify-content:space-evenly}
+.cell small{font-size:9px}
+.cell b{font-size:16px;min-height:17px}
+#roll{width:96px;height:108px}
+.cup{font-size:16px}
+/* Os 5 dados ficam sempre numa fileira, mesmo quando o centro gira para um jogador do lado */
+.dice{flex-wrap:nowrap;gap:8px}
+.die{width:clamp(34px,min(5.2vw,calc((var(--iw,420px) - 48px) / 5)),56px)}
+.play{gap:16px}
+#mark{font-size:16px;padding:10px 18px}
+.tools button{padding:6px 10px;min-height:36px;font-size:13px}
+.who{font-size:clamp(18px,2.6vw,24px)}
+.mesa{padding:18px}
+/* O copo e os dados giram para ficar de frente para quem está jogando */
+.center{position:relative;min-height:300px;overflow:visible}
+.spin{position:absolute;left:50%;top:50%;width:var(--iw,420px);display:flex;flex-direction:column;align-items:center;gap:8px;
+  transform:translate(-50%,-50%) rotate(var(--cr,0deg));transition:transform .6s cubic-bezier(.3,.8,.3,1)}
+@media (prefers-reduced-motion:reduce){.spin{transition:none}}
+/* As cartelas encolhem com a tela, mas nunca perdem a orientação de cada lado */
+.seathead b{font-size:calc(var(--cw) * .09)}
+.seathead span{font-size:calc(var(--cw) * .1)}
+.cell small{font-size:calc(var(--cw) * .032);line-height:1;white-space:nowrap;margin-top:.5em}
+/* A letra de mão desenha os números baixos dentro da linha; sobe um pouco para ficarem no meio do espaço */
+.cell b{font-size:calc(var(--cw) * .08);line-height:1;min-height:0;transform:translateY(-.12em)}
+/* Barra de ferramentas: ícone + texto */
+.tools button{display:inline-flex;align-items:center;gap:5px}
+.chips,.board{display:none}
+
+/* ---------- Celular ---------- */
+body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-inset-right,0px)) max(4px,env(safe-area-inset-bottom,0px)) max(4px,env(safe-area-inset-left,0px))}
+.phone .mesa{padding:12px;border-radius:20px;box-shadow:inset 0 0 0 6px var(--wood2),inset 0 0 0 8px #0004,inset 0 0 40px #0008}
+.phone #setup{min-height:calc(100dvh - 32px);gap:14px;padding-block:8px}
+.phone .count button{width:56px;height:56px;font-size:24px}
+.phone .names{grid-template-columns:1fr}
+.phone #game{display:grid;min-height:calc(100vh - 32px);min-height:calc(100dvh - 32px);gap:8px;
+  grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto 1fr auto;grid-template-areas:"chips" "center" "board" "tools";
+  --cw:min(330px,calc(100vw - 40px));--ch:calc(var(--cw) * .6);--pw:calc(100vw - 40px)}
+.phone .area{display:none}
+.phone .center{min-height:0;padding:0}
+.phone .spin{position:static;transform:none;width:100%;transition:none;gap:6px}
+.phone .who{font-size:20px}
+.phone .who small{font-size:10px;letter-spacing:1px}
+.phone .play{flex-direction:column;gap:6px;flex-wrap:nowrap}
+.phone .play .side:first-child{flex-direction:row;gap:12px}
+.phone #roll{width:62px;height:70px}
+.phone .cup{font-size:12px}
+.phone .cup::before{top:8px}.phone .cup::after{bottom:9px;height:5px}
+.phone #baixo{font-size:13px;padding:5px 10px}
+.phone .side{gap:6px}
+.phone .dice{gap:6px}
+.phone .die{width:clamp(34px,calc((var(--pw) - 30px) / 5),52px)}
+.phone .die.held{transform:translateY(-6px)}
+.phone #hint{font-size:13px;min-height:18px}
+.phone #hint.flash{font-size:20px}
+.phone #mark{font-size:15px;padding:9px 16px}
+.phone .chips{grid-area:chips;display:flex;gap:6px}
+.chip{flex:1 1 0;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:0 4px;padding:4px 7px;border-radius:10px;border:2px solid var(--line);background:#0003;color:var(--paper);text-align:left}
+.chip b{grid-column:1/-1;font-family:var(--hand);font-size:17px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip span{font-family:var(--hand);font-size:19px;font-weight:700;color:var(--gold)}
+.chip em{font-style:normal;font-size:11px;font-weight:800;color:var(--muted)}
+.chip.cur{border-color:var(--gold);box-shadow:0 0 10px #f0b93a77}
+.chip.on{background:var(--paper);color:var(--pen)}
+.chip.on span{color:var(--pen)}.chip.on em{color:#9b8c78}
+.phone .board{grid-area:board;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:0}
+.peek{margin:0;font-size:13px;font-weight:800;color:var(--muted)}
+.peek button{border:none;background:none;color:var(--gold);font:inherit;text-decoration:underline;padding:4px}
+.phone .board .seat{width:var(--cw);height:var(--ch);box-sizing:border-box;padding:7px 8px}
+.phone .board .seat.cur{box-shadow:0 0 0 3px var(--gold),0 0 18px #f0b93a88}
+.phone .seathead{height:22px;margin-bottom:4px}
+.phone .seathead b{font-size:19px}
+.phone .seathead span{font-size:20px}
+.phone .sheet{grid-template-rows:repeat(4,1fr);height:calc(100% - 26px)}
+.phone .cell small{font-size:9px}
+.phone .cell b{font-size:19px}
+.phone .tools{gap:6px;flex-wrap:nowrap}
+.phone .tools button{padding:4px 10px;min-height:38px;min-width:42px;justify-content:center;font-size:15px}
+.phone .tools .tx{display:none}
+.phone .tools .ask .tx{display:inline;font-size:12px}
+/* Celular bem pequeno: cartela um pouco mais baixa */
+@media (max-height:600px) and (min-height:500px){.phone #game{--ch:calc(var(--cw) * .54)}}
+/* Celular deitado: dados à esquerda, placar e cartela à direita */
+@media (max-height:499px){
+  .phone #game{grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto 1fr auto;
+    grid-template-areas:"center chips" "center board" "center tools";
+    --cw:min(300px,40vw);--ch:calc(var(--cw) * .6);--pw:calc(60vw - 150px)}
+  .phone .chips{width:var(--cw)}
+  .phone .chip{padding:3px 6px}
+  .phone .play{flex-direction:row;align-items:center}
+  .phone .play .side:first-child{flex-direction:column;gap:4px}
+  .phone .center{align-self:center}
+}
+/* ---------- Tela inicial: jogar no app ou só marcar ---------- */
+.modes{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.modes button{display:flex;flex-direction:column;gap:2px;align-items:center;min-width:180px;padding:10px 16px;border-radius:14px;border:2px solid var(--line);background:#0003;color:var(--paper)}
+.modes button b{font-size:17px;font-weight:900}
+.modes button small{font-size:12px;font-weight:700;color:var(--muted)}
+.modes button[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:var(--ink)}
+.modes button[aria-pressed="true"] small{color:#5f4a38}
+
+/* ---------- Casa anulada: os pontos ficam riscados à caneta ---------- */
+.cell.void b{color:#a39a8c}
+.cell.void b::before{content:"";position:absolute;left:-7px;right:-7px;top:50%;border-top:2px solid var(--pen);border-radius:50%;transform:rotate(-14deg)}
+
+/* ---------- Chance da jogada: brilho discreto nos dados ---------- */
+#hint .odds{display:block;font:800 13px/1.3 var(--body);color:var(--muted);letter-spacing:.3px;margin-top:3px;animation:rise .7s ease-out}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.dice.combo .die svg{animation:glow 1.5s ease-out}
+@keyframes glow{0%{filter:none}35%{filter:drop-shadow(0 0 7px #f0b93a) drop-shadow(0 0 2px #f0b93a)}100%{filter:none}}
+
+/* ---------- Aviso rápido ---------- */
+.toast{position:fixed;left:50%;top:50%;z-index:40;transform:translate(-50%,-50%);max-width:min(90vw,420px);box-sizing:border-box;padding:12px 18px;border-radius:14px;background:var(--ink);color:var(--gold);font-weight:900;font-size:17px;text-align:center;box-shadow:0 10px 30px #000a;pointer-events:none}
+.toast.show{animation:toast 3.2s ease forwards}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-40%)}8%,85%{opacity:1;transform:translate(-50%,-50%)}100%{opacity:0;transform:translate(-50%,-50%)}}
+
+/* ---------- Só marcador ---------- */
+#game.scorer .play,#game.scorer #mark{display:none}
+#game:not(.scorer) .live{display:none}
+.live{display:flex;flex-direction:column;align-items:center;gap:10px;width:min(100%,380px)}
+.live ol{list-style:none;margin:0;padding:0;width:100%;display:flex;flex-direction:column;gap:6px}
+.live .lr{width:100%;box-sizing:border-box;display:grid;grid-template-columns:34px minmax(0,1fr) auto auto;align-items:center;gap:8px;padding:7px 12px;border-radius:12px;background:#0003;border:2px solid var(--line);color:var(--paper);font:inherit;text-align:left}
+.live .lr.lead{border-color:var(--gold);background:#f0b93a22}
+.live button.lr.on{background:#fbf5e62e;border-color:var(--paper)}
+.live .pos{font-weight:900;color:var(--muted);text-align:center}
+.live .lr b{font-family:var(--hand);font-size:22px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.live .lr small{font-size:12px;font-weight:800;color:var(--muted);white-space:nowrap}
+/* 5 a 8 jogadores: ranking em duas colunas */
+.live ol.many{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.live ol.many .lr{grid-template-columns:24px minmax(0,1fr) auto auto;gap:4px;padding:4px 8px}
+.live ol.many .lr small{font-size:11px}
+.liveBtns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.finish{border:2px solid var(--gold);background:#0003;color:var(--gold);border-radius:10px;padding:6px 14px;font-weight:900;min-height:38px}
+.finish.ask{background:var(--gold);color:var(--ink)}
+.finish:disabled{opacity:.4;cursor:default}
+.count.many button{width:52px;height:52px;font-size:23px;border-radius:13px}
+.btns .ghost.reset{border-color:#7a6250;color:#7a6250;font-size:14px;padding:8px 14px}
+.live .pts{font-family:var(--hand);font-size:26px;font-weight:700;color:var(--gold);min-width:2.2ch;text-align:right}
+.clear{border:1px solid var(--line);background:#0003;color:var(--muted);border-radius:10px;padding:8px 14px;font-weight:800;min-height:38px}
+.clear.ask{border-color:var(--gold);color:var(--gold)}
+.cell.mk{cursor:pointer}
+.cell.mk:active{background:#f0b93a33}
+.pickbox{width:min(100%,420px);gap:12px;transition:transform .2s}
+.pickbox h2{font-size:26px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.pickbox h2 small{font-family:var(--hand);font-size:22px;color:var(--pen)}
+.opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.opt{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;border-radius:12px;border:2px solid #24170e22;background:#1f5a3a10;color:var(--ink);min-height:60px}
+.opt b{font-family:var(--hand);font-size:28px;line-height:1;color:var(--pen)}
+.opt small{font-size:11px;font-weight:800;color:#7a6250}
+.opt.on{background:var(--gold);border-color:var(--gold)}
+.opt.x b{color:var(--red)}
+.opt.boca{border-color:var(--gold)}
+.opt.boca b{font-size:22px}
+
+/* ---------- Resumo da partida ---------- */
+.endbox{width:min(100%,480px)}
+/* Exportar abre por cima do resumo da partida */
+#exp{z-index:25}
+.expbox{width:min(100%,520px)}
+.expbox img{display:block;width:100%;max-height:46vh;object-fit:contain;border-radius:12px;box-shadow:0 4px 14px #0003}
+.big.wa{background:#25d366;color:#fff;box-shadow:0 5px 0 #128c4b}
+.expbox .btns .big{font-size:18px;padding:12px 20px}
+.expbox .btns .ghost{font-size:14px;padding:9px 14px}
+.expbox .btns{position:sticky;bottom:-24px;margin:0 -24px -24px;padding:12px 24px 20px;background:var(--paper)}
+/* Botões sempre à vista, mesmo com muitos jogadores no resumo */
+.endbox .btns{position:sticky;bottom:-24px;margin:0 -24px -24px;padding:12px 24px 20px;background:linear-gradient(#fbf5e600,var(--paper) 14px)}
+.box ol#rank.many{gap:4px}
+.box ol#rank.many li.r{padding:5px 10px}
+.voids{font-size:13px;font-weight:700;color:#7a6250}
+.series{display:flex;flex-direction:column;gap:8px;text-align:left;border-top:2px dashed #24170e22;padding-top:12px}
+.series h3{margin:0;font-family:var(--display);font-weight:400;font-size:18px;color:var(--felt)}
+.box ol.wins,.box ol.hist{gap:4px}
+.wins li{display:grid;grid-template-columns:minmax(0,7.5em) 1fr auto;align-items:center;gap:8px;font-weight:800}
+.wins li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wins li i{height:10px;border-radius:5px;background:linear-gradient(90deg,var(--gold) var(--w),#24170e14 var(--w))}
+.hist li{font-size:13px;font-weight:600;color:#5f4a38}
+/* Celular: aviso da jogada e ranking mais compactos */
+.phone #hint .odds{font-size:11px;margin-top:1px}
+.phone #hint.flash{line-height:1.1}
+.phone .live{gap:6px}
+.phone .live ol{gap:4px}
+.phone .live .lr{padding:3px 10px;border-radius:10px}
+.phone .live ol.many .lr{padding:2px 7px}
+.phone .live .lr b{font-size:18px}
+.phone .finish{min-height:32px;padding:4px 12px;font-size:13px}
+.phone #game.scorer .chips{display:none}
+/* Tablet usando o modo compacto (marcador com mais de 4): ranking ao lado da cartela */
+@media (min-width:700px) and (min-height:500px){
+  .phone #game.scorer{grid-template-columns:minmax(0,1fr) auto;grid-template-rows:1fr auto;grid-template-areas:"center board" "tools tools";
+    --cw:min(420px,44vw);--ch:calc(var(--cw) * .66);gap:16px}
+  .phone #game.scorer .live{width:min(100%,520px)}
+  .phone #game.scorer .center{align-self:center}
+}
+.phone .live .pts{font-size:21px}
+.phone .clear{min-height:32px;padding:4px 12px;font-size:13px}
+@media (max-height:700px){.phone #game.scorer .who small{display:none}}
+@media (prefers-reduced-motion:reduce){.die.tumble,.die.land,.die.flip,#roll.shake .cup,.dice.combo .die svg,#hint .odds,.toast.show{animation:none}}
+</style>
+
+<div class="mesa">
+  <!-- Tela inicial -->
+  <section id="setup">
+    <h1>Bozó de Mesa</h1>
+    <div class="modes" id="modes" role="group" aria-label="Como vão jogar">
+      <button data-m="jogo"><b>🎲 Jogar no app</b><small>copo e dados na tela</small></button>
+      <button data-m="marcador"><b>📝 Só marcador</b><small>dados de verdade, o app marca</small></button>
+    </div>
+    <p>Quantos jogadores vão jogar?</p>
+    <div class="count" id="count" role="group" aria-label="Número de jogadores"></div>
+    <div class="names" id="names"></div>
+    <button class="big" id="start">Começar</button>
+    <button class="vsbot" id="vsBot">🤖 Jogar contra o computador</button>
+  </section>
+
+  <!-- Jogo -->
+  <section id="game" hidden>
+    <div class="area top" id="areaTop"></div>
+    <div class="area left" id="areaLeft"></div>
+    <div class="center" id="center">
+     <div class="spin" id="spinWrap">
+      <div class="who" id="who"><small>Rodada 1 de 10</small>Jogador 1</div>
+      <div class="play">
+        <div class="side">
+          <button id="roll" aria-label="Lançar os dados"><span class="cup">Lançar</span></button>
+          <span id="rollsLeft">3 lançamentos</span>
+          <button id="baixo" disabled aria-pressed="false" title="A partir do segundo lançamento: no próximo lançamento vale a face de baixo">Pedir baixo</button>
+        </div>
+        <div class="side">
+          <div class="dice" id="dice"></div>
+          <p id="hint">Toque no copo para lançar.</p>
+        </div>
+      </div>
+      <button class="big" id="mark" disabled>Lance os dados primeiro</button>
+      <!-- Só marcador: ranking da partida ao vivo -->
+      <div class="live" id="live">
+        <ol id="liveRank"></ol>
+        <div class="liveBtns">
+          <button class="finish" id="finishMatch">🏁 Finalizar partida</button>
+          <button class="clear" id="clearMatch">↺ Zerar partida</button>
+        </div>
+      </div>
+     </div>
+    </div>
+    <div class="area right" id="areaRight"></div>
+    <div class="area bottom" id="areaBottom"></div>
+    <!-- Só no celular: placar de todos em cima e a cartela de quem está jogando -->
+    <div class="chips" id="chips"></div>
+    <div class="board" id="board"></div>
+    <div class="tools">
+      <button id="sound" aria-label="Ligar ou desligar som"></button>
+      <button id="full" hidden aria-label="Tela cheia"></button>
+      <button id="exportBtn" aria-label="Exportar resultados"><span class="ic">📤</span><span class="tx">Exportar</span></button>
+      <button id="rulesBtn" aria-label="Regras"><span class="ic">📖</span><span class="tx">Regras</span></button>
+      <button id="newgame" aria-label="Novo jogo"></button>
+      <button id="reset" aria-label="Zerar tudo"></button>
+    </div>
+  </section>
+</div>
+
+<div class="overlay" id="rules" hidden>
+  <div class="box">
+    <h2>Regras</h2>
+    <ul>
+      <li>Cada jogador tem até 3 lançamentos por vez. Toque nos dados que quer guardar; os outros rolam de novo.</li>
+      <li>Depois, toque numa casa vazia da sua cartela e aperte Marcar. Se nada servir, você risca uma casa (vale zero).</li>
+      <li>Pedir baixo: a partir do segundo lançamento, antes de lançar, você pode pedir baixo. Os dados que caírem valem a face de baixo (1↔6, 2↔5, 3↔4). Os dados guardados não viram. Dá para cancelar antes de lançar.</li>
+      <li>Ás a Sena: soma dos dados daquele número.</li>
+      <li>Casa anulada: se todos os jogadores marcarem a mesma casa com os mesmos pontos (por exemplo, todos fizeram Quadrada 30), ela fica riscada e não conta na soma de ninguém.</li>
+      <li>Full (3 + 2 iguais) 10, Seguida (1 a 5 ou 2 a 6) 20, Quadrada (4 iguais) 30, General (5 iguais) 40.</li>
+      <li>De boca (no primeiro lançamento): Full 15, Seguida 25, Quadrada 35. General de boca acaba o jogo e ganha na hora.</li>
+      <li>Na tela inicial, troque qualquer jogador para 🤖 Computador, ou toque em "Jogar contra o computador".</li>
+      <li>Quando todas as cartelas estiverem cheias, ganha quem tiver mais pontos.</li>
+      <li>Só marcador: para jogar com copo e dados de verdade, de 2 a 8 jogadores. Toque numa casa de qualquer cartela e escolha os pontos; toque de novo para corrigir. Com mais de 4 jogadores (ou no celular), toque no nome no ranking para ver a cartela de cada um.</li>
+      <li>A partida termina sozinha com General de boca ou quando todas as cartelas estão cheias. No marcador, "Finalizar partida" encerra a qualquer momento e ganha quem tiver mais pontos.</li>
+      <li>Fechou o app? Ao abrir de novo, ele volta onde parou: na partida, no resumo ou na tela inicial, com o placar de vitórias.</li>
+      <li>📤 Exportar: gera uma imagem com o resultado e o placar de vitórias para mandar no WhatsApp, e também o texto e (no navegador) uma planilha. Bom para guardar antes de zerar.</li>
+      <li>O placar de partidas (🏆) continua enquanto forem os mesmos jogadores, até alguém tocar em "Zerar placar" ou "Zerar tudo".</li>
+    </ul>
+    <div class="btns"><button class="big" id="closeRules">Entendi</button></div>
+  </div>
+</div>
+
+<!-- Só marcador: escolher os pontos de uma casa -->
+<div class="overlay" id="pick" hidden>
+  <div class="box pickbox" id="pickBox" role="dialog" aria-modal="true" aria-labelledby="pickTitle"></div>
+</div>
+
+<!-- Exportar os resultados das partidas -->
+<div class="overlay" id="exp" hidden>
+  <div class="box expbox" role="dialog" aria-modal="true" aria-labelledby="expTitle">
+    <h2 id="expTitle">Exportar resultados</h2>
+    <img id="expImg" alt="Imagem com o resultado das partidas">
+    <pre id="expText" hidden></pre>
+    <div class="btns">
+      <button class="big wa" id="expWa">🟢 Enviar no WhatsApp</button>
+      <button class="big" id="expPic">🖼️ Compartilhar imagem</button>
+      <button class="ghost" id="expWaTxt">💬 Texto no WhatsApp</button>
+      <button class="ghost" id="expCopy">📋 Copiar texto</button>
+      <button class="ghost" id="expCsv">📊 Planilha (.csv)</button>
+      <button class="ghost reset" id="expClose">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<div class="overlay" id="end" hidden>
+  <div class="box endbox">
+    <h2 id="endTitle">Fim de jogo!</h2>
+    <p id="endSub"></p>
+    <ol id="rank"></ol>
+    <p class="voids" id="voids" hidden></p>
+    <div class="series" id="series" hidden></div>
+    <div class="btns">
+      <button class="big" id="again">Próxima partida</button>
+      <button class="ghost" id="toSetup">Novo jogo</button>
+      <button class="ghost" id="exportEnd">📤 Exportar resultados</button>
+      <button class="ghost reset" id="resetAll">↺ Zerar placar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const CATS={
+ '1':{n:'Ás',f:1},'2':{n:'Duque',f:2},'3':{n:'Terno',f:3},'4':{n:'Quadra',f:4},'5':{n:'Quina',f:5},'6':{n:'Sena',f:6},
+ full:{n:'Full'},seq:{n:'Seguida'},quad:{n:'Quadrada'},gen:{n:'General'}};
+const NCATS=10;
+/* Disposição da cartela: Ás-Duque-Terno à esquerda, Quadra-Quina-Sena no meio, Full-Seguida-Quadrada-General à direita */
+const LAYOUT=['1','4','full','2','5','seq','3','6','quad',null,null,'gen'];
+/* Posição das bolinhas num dado de 100x100 */
+const P={a:[28,28],b:[72,28],c:[28,50],d:[50,50],e:[72,50],f:[28,72],g:[72,72]};
+const PIPS={1:'d',2:'ag',3:'adg',4:'abfg',5:'abdfg',6:'abcefg'};
+const BOTNAMES=['Robozó','Zé do Copo','Dona Sorte','Seu Dado'];
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let G=null,nPlayers=2,busy=false,muted=false,draftNames=[],draftBots=[],gameMode='jogo';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+/* Só marcador: o jogo é com copo e dados de verdade e o app só marca os pontos */
+const isScorer=()=>!!(G&&G.mode==='marcador');
+const isBot=()=>!!(G&&!isScorer()&&G.players[G.cur].bot);
+
+/* ---------- Som ---------- */
+let ac=null;
+function audio(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(ac&&ac.state==='suspended')ac.resume();return ac}
+function tone(f,dur,type='sine',vol=.15,delay=0){if(muted)return;const a=audio();if(!a)return;const t=a.currentTime+delay,o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.connect(g).connect(a.destination);o.start(t);o.stop(t+dur+.02)}
+function noise(dur,vol,freq,delay=0){if(muted)return;const a=audio();if(!a)return;const len=Math.floor(a.sampleRate*dur),b=a.createBuffer(1,len,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*(1-i/len);const s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();f.type='bandpass';f.frequency.value=freq;f.Q.value=2;g.gain.value=vol;s.buffer=b;s.connect(f).connect(g).connect(a.destination);s.start(a.currentTime+delay)}
+const rattle=()=>noise(.06,.5,1500+Math.random()*2500);
+const landSound=()=>{for(let i=0;i<5;i++)noise(.04,.6,3000+Math.random()*1500,i*.045)};
+const markSound=()=>{tone(660,.12,'triangle',.15);tone(990,.18,'triangle',.12,.08)};
+const flipSound=()=>{noise(.08,.5,2200);tone(380,.1,'triangle',.1,.05)};
+const fanfare=()=>[523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,.22,'triangle',.18,i*.12));
+/* Botões da barra: ícone + texto (no celular aparece só o ícone, menos quando pede confirmação) */
+function setBtn(id,ic,tx,ask){const b=$(id);b.innerHTML=`<span class="ic">${ic}</span><span class="tx">${tx}</span>`;b.classList.toggle('ask',!!ask)}
+function setSoundLabel(){setBtn('sound',muted?'🔇':'🔊','Som')}
+$('sound').onclick=()=>{muted=!muted;setSoundLabel();try{localStorage.setItem('bozo-mute',muted?'1':'0')}catch(e){}};
+
+/* ---------- Pontuação ---------- */
+function points(cat,dice,deBoca){
+  const c=[0,0,0,0,0,0,0];dice.forEach(v=>c[v]++);
+  const k=CATS[cat];
+  if(k.f)return c[k.f]*k.f;
+  const b=deBoca?5:0;
+  if(cat==='full')return c.includes(3)&&c.includes(2)?10+b:0;
+  if(cat==='seq'){const s=[...dice].sort().join('');return s==='12345'||s==='23456'?20+b:0}
+  if(cat==='quad')return c.some(x=>x>=4)?30+b:0;
+  if(cat==='gen')return c.includes(5)?40:0;
+  return 0;
+}
+/* Casa anulada: quando todos marcaram a mesma casa com os mesmos pontos (risco não conta), ela não vale para ninguém */
+function cancelled(cat){const v=G.players.map(p=>p.sc[cat]);return v.length>1&&v.every(x=>x!==undefined&&x>0&&x===v[0])}
+const total=p=>Object.entries(p.sc).reduce((a,[c,v])=>a+(cancelled(c)?0:v),0);
+const deBoca=()=>G.rolls===1;
+
+/* ---------- Salvar ---------- */
+function save(){try{localStorage.setItem('bozo-game2',JSON.stringify(G))}catch(e){}}
+function load(){try{const g=JSON.parse(localStorage.getItem('bozo-game2'));if(g&&g.players&&g.players.length<=8){g.wins=g.wins||g.players.map(()=>0);g.games=g.games||0;g.baixo=false;g.mode=g.mode||'jogo';g.hist=g.hist||[];return g}}catch(e){}return null}
+
+/* ---------- Tela inicial ---------- */
+function renderSetup(){
+  $('modes').querySelectorAll('button').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.m===gameMode);b.onclick=()=>{keepNames();gameMode=b.dataset.m;tone(560,.05,'triangle',.1);renderSetup()}});
+  $('vsBot').hidden=gameMode==='marcador';
+  /* No marcador cabem até 8 jogadores; jogando no app, até 4 */
+  const counts=gameMode==='marcador'?[2,3,4,5,6,7,8]:[2,3,4];if(nPlayers>counts.at(-1))nPlayers=counts.at(-1);
+  $('count').classList.toggle('many',counts.length>3);
+  $('count').innerHTML=counts.map(n=>`<button data-n="${n}" aria-pressed="${n===nPlayers}">${n}</button>`).join('');
+  $('count').querySelectorAll('button').forEach(b=>b.onclick=()=>{keepNames();nPlayers=+b.dataset.n;tone(600,.05,'triangle',.1);renderSetup()});
+  $('names').innerHTML=Array.from({length:nPlayers},(_,i)=>{
+    const bot=gameMode==='jogo'&&!!draftBots[i];
+    return `<div class="pl"><label for="nome${i}">Jogador ${i+1}${isPhone()||nPlayers>4?'':' · '+sideOf(nPlayers,i)}</label>
+      <div class="plrow"><input id="nome${i}" maxlength="12" placeholder="${bot?BOTNAMES[i]:'Jogador '+(i+1)}" value="${esc(draftNames[i]||'')}">
+      ${gameMode==='jogo'?`<button class="kind" data-i="${i}" aria-pressed="${bot}" title="Trocar entre pessoa e computador">${bot?'🤖 Computador':'🧑 Pessoa'}</button>`:''}</div></div>`}).join('');
+  $('names').querySelectorAll('.kind').forEach(b=>b.onclick=()=>{keepNames();const i=+b.dataset.i;draftBots[i]=!draftBots[i];tone(draftBots[i]?500:700,.05,'triangle',.1);renderSetup()});
+}
+function keepNames(){draftNames=Array.from({length:8},(_,i)=>{const el=$('nome'+i);return el?el.value:(draftNames[i]||'')})}
+$('start').onclick=()=>{
+  keepNames();audio();
+  const specs=Array.from({length:nPlayers},(_,i)=>{const bot=gameMode==='jogo'&&!!draftBots[i];return {name:(draftNames[i]||'').trim()||(bot?BOTNAMES[i%4]:`Jogador ${i+1}`),bot}});
+  /* Mesmos jogadores no mesmo modo: o placar de partidas continua até alguém zerar tudo */
+  const same=G&&G.mode===gameMode&&G.players.length===specs.length&&G.players.every((p,i)=>p.name===specs[i].name);
+  newGame(specs,same?keepOf():null);
+};
+$('names').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'){e.preventDefault();$('start').onclick()}});
+$('vsBot').onclick=()=>{keepNames();gameMode='jogo';nPlayers=2;draftBots=[false,true];renderSetup();$('start').onclick()};
+
+function newGame(specs,keep,mode=gameMode){
+  if(mode==='jogo')specs=specs.slice(0,4);
+  G={players:specs.map(s=>({name:s.name,bot:mode==='jogo'&&!!s.bot,sc:{}})),cur:0,dice:[1,2,3,4,5],held:[0,0,0,0,0],rolls:0,sel:null,baixo:false,over:false,
+     mode,wins:keep?keep.wins:specs.map(()=>0),games:keep?keep.games:0,hist:keep?keep.hist:[]};
+  busy=false;viewing=null;$('hint').classList.remove('flash');$('pick').hidden=true;$('setup').hidden=true;$('game').hidden=false;setMode(true);
+  save();$('end').hidden=true;$('setup').hidden=true;$('game').hidden=false;render();maybeBot();keepAwake();
+}
+const specsOf=()=>G.players.map(p=>({name:p.name,bot:p.bot}));
+const keepOf=()=>({wins:G.wins,games:G.games,hist:G.hist});
+
+/* ---------- Desenho ---------- */
+function dieSVG(v){
+  const dots=PIPS[v].split('').map(k=>`<circle cx="${P[k][0]}" cy="${P[k][1]}" r="9" fill="#24170e"/>`).join('');
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="20" fill="#fbf5e6" stroke="#d8c9a8" stroke-width="3"/>${dots}</svg>`;
+}
+function renderDice(){
+  $('dice').innerHTML=G.dice.map((v,i)=>`<button class="die ${G.rolls===0?'idle':''} ${G.held[i]?'held':''}" data-i="${i}" aria-label="Dado ${v}${G.held[i]?', guardado':''}" aria-pressed="${!!G.held[i]}">${dieSVG(v)}</button>`).join('');
+  $('dice').querySelectorAll('.die').forEach(d=>d.onclick=()=>{
+    if(busy||isBot()||G.rolls===0||G.rolls>=3)return;
+    const i=+d.dataset.i;G.held[i]=G.held[i]?0:1;tone(G.held[i]?700:450,.06,'triangle',.1);save();render();
+  });
+}
+/* Linhas da cartela riscadas à mão: cada traço sai um pouco torto, mas igual a cada desenho do mesmo jogador */
+function sheetLines(seed){
+  let s=seed*7919+13;const rnd=()=>(s=(s*9301+49297)%233280)/233280,j=n=>(rnd()-.5)*n;
+  const line=(x1,y1,x2,y2)=>`<path d="M${x1+j(1.5)} ${y1+j(1.5)} Q${(x1+x2)/2+j(2.5)} ${(y1+y2)/2+j(2.5)} ${x2+j(1.5)} ${y2+j(1.5)}"/>`;
+  /* Duas colunas de 3 casas (Ás a Sena) e a coluna da direita com 4 (Full a General) */
+  return `<svg class="lines" viewBox="0 0 300 200" preserveAspectRatio="none" aria-hidden="true">${
+    line(100,4,100,148)+line(200,3,200,197)+line(5,50,296,51)+line(4,100,295,99)+line(206,150,294,151)}</svg>`;
+}
+function seatHTML(p,i){
+  const sc=isScorer(),cur=!sc&&i===G.cur,canPick=cur&&G.rolls>0&&!busy;
+  const cells=LAYOUT.map((id,k)=>{
+    const mid=k%3===2?' mid':'';
+    if(!id)return `<div class="cell blank${mid}"></div>`;
+    const v=p.sc[id],name=CATS[id].n;
+    if(sc)return `<button class="cell mk${mid}${v===0?' zero':''}${v!==undefined&&cancelled(id)?' void':''}" data-p="${i}" data-c="${id}" aria-label="${name} de ${esc(p.name)}: ${v===undefined?'vazia':v===0?'riscada':v+' pontos'}"><small>${name}</small><b>${v===undefined?'':v===0?'X':v}</b></button>`;
+    if(v!==undefined)return `<div class="cell${mid}${v===0?' zero':''}${cancelled(id)?' void':''}"${cancelled(id)?` title="Anulada: todos fizeram ${v}"`:''}><small>${name}</small><b>${v===0?'X':v}</b></div>`;
+    if(canPick){const pts=points(id,G.dice,deBoca());return `<button class="cell prev${mid}${G.sel===id?' sel':''}" data-c="${id}" aria-label="${name}: ${pts} pontos"><small>${name}</small><b>${pts||'–'}</b></button>`}
+    return `<div class="cell${mid}"><small>${name}</small><b></b></div>`;
+  }).join('');
+  return `<div class="seat${cur?' cur':''}"><div class="seathead"><b>${p.bot?'🤖 ':''}${esc(p.name)}</b><em class="wins" title="Partidas ganhas">🏆 ${G.wins[i]}</em><span>${total(p)}</span></div><div class="sheet">${cells}${sheetLines(i+1)}</div></div>`;
+}
+/* Lugar de cada jogador em volta da mesa (a vez passa no sentido horário) */
+/* A vez gira em volta da mesa (embaixo → esquerda → em cima → direita) e segue o número de cada jogador */
+const SEATS={2:{bottom:[0],top:[1]},3:{bottom:[0],top:[1],right:[2]},4:{bottom:[0],left:[1],top:[2],right:[3]}};
+const SIDE={bottom:'embaixo',top:'em cima',left:'à esquerda',right:'à direita'};
+const sideOf=(n,i)=>SIDE[Object.keys(SEATS[n]).find(k=>SEATS[n][k].includes(i))];
+const ORDER={2:[0,1],3:[0,1,2],4:[0,1,2,3]};
+const nextPlayer=c=>{const o=ORDER[G.players.length];return o[(o.indexOf(c)+1)%o.length]};
+/* Celular: a mesa não cabe em volta, então o aparelho passa de mão em mão.
+   Em cima o placar de todos; embaixo a cartela de quem joga (toque num nome para ver a cartela dele) */
+const phoneMQ=matchMedia('(max-width: 699px), (max-height: 499px)');
+const isPhone=()=>phoneMQ.matches;
+const compact=()=>isPhone()||!!(G&&!$('game').hidden&&G.players.length>4);
+let viewing=null;
+function setMode(quiet){document.body.classList.toggle('phone',compact());if(!quiet&&G&&!$('game').hidden)render()}
+phoneMQ.addEventListener?phoneMQ.addEventListener('change',setMode):phoneMQ.addListener(setMode);
+function renderPhone(){
+  if(viewing!==null&&!G.players[viewing])viewing=null;
+  const sc=isScorer(),show=viewing??G.cur;
+  $('chips').innerHTML=(ORDER[G.players.length]||G.players.map((_,i)=>i)).map(i=>{const p=G.players[i];
+    return `<button class="chip${i===G.cur&&!sc?' cur':''}${i===show?' on':''}" data-i="${i}" aria-pressed="${i===show}"><b>${p.bot?'🤖 ':''}${esc(p.name)}</b><em>🏆 ${G.wins[i]}</em><span>${total(p)}</span></button>`}).join('');
+  $('chips').querySelectorAll('.chip').forEach(c=>c.onclick=()=>{const i=+c.dataset.i;viewing=i===G.cur?null:i;tone(560,.04,'triangle',.08);render()});
+  $('board').innerHTML=(show!==G.cur&&!sc?`<p class="peek">Cartela de ${esc(G.players[show].name)} · <button id="backMe">voltar</button></p>`:'')+seatHTML(G.players[show],show);
+  if($('backMe'))$('backMe').onclick=()=>{viewing=null;render()};
+}
+function renderSeats(){
+  ['Top','Left','Right','Bottom'].forEach(k=>$('area'+k).innerHTML='');$('chips').innerHTML=$('board').innerHTML='';
+  if(compact()){renderPhone()}else{
+  const map=SEATS[G.players.length];
+  ['top','left','right','bottom'].forEach(pos=>{
+    $('area'+pos[0].toUpperCase()+pos.slice(1)).innerHTML=(map[pos]||[]).map(i=>`<div class="slot ${pos}">${seatHTML(G.players[i],i)}</div>`).join('');
+  });}
+  document.querySelectorAll('.cell.prev').forEach(c=>c.onclick=()=>{if(isBot())return;G.sel=c.dataset.c;tone(520,.05,'triangle',.08);save();render()});
+  document.querySelectorAll('.cell.mk').forEach(c=>c.onclick=()=>openPick(+c.dataset.p,c.dataset.c));
+}
+const ROT={bottom:0,top:180,right:-90,left:90};
+let lastRot=0;
+function orientCenter(){
+  if(!G||$('game').hidden)return;
+  if(compact()||isScorer()){lastRot=0;$('spinWrap').style.setProperty('--cr','0deg');if(!compact()){const b=$('center').getBoundingClientRect();$('spinWrap').style.setProperty('--iw',Math.max(220,b.width-12)+'px')}return}
+  const map=SEATS[G.players.length];
+  const pos=Object.keys(map).find(k=>map[k].includes(G.cur))||'bottom';
+  let r=ROT[pos];
+  /* gira pelo caminho mais curto */
+  while(r-lastRot>180)r-=360;while(r-lastRot<-180)r+=360;lastRot=r;
+  const box=$('center').getBoundingClientRect(),side=Math.abs(r%180)===90;
+  const w=Math.max(220,(side?box.height:box.width)-12);
+  const s=$('spinWrap').style;s.setProperty('--iw',w+'px');s.setProperty('--cr',r+'deg');
+}
+addEventListener('resize',orientCenter);
+function render(){
+  $('game').classList.toggle('scorer',isScorer());
+  if(isScorer())return renderScorer();
+  const p=G.players[G.cur],filled=Object.keys(p.sc).length,left=3-G.rolls,bot=isBot();
+  $('who').innerHTML=`<small>Partida ${G.games+1} · Rodada ${Math.min(filled+1,NCATS)} de ${NCATS}</small>Vez de ${p.bot?'🤖 ':''}${esc(p.name)}`;
+  $('roll').disabled=busy||left<=0||bot;
+  /* Pedir baixo: só a partir do segundo lançamento, e vale para o próximo */
+  const bx=$('baixo');bx.disabled=busy||bot||G.over||G.rolls===0||left<=0;
+  bx.classList.toggle('used',!!G.baixo);bx.setAttribute('aria-pressed',!!G.baixo);bx.textContent=G.baixo?'✓ Baixo pedido':'Pedir baixo';
+  $('rollsLeft').textContent=left===0?'Sem lançamentos':`${left} lançamento${left>1?'s':''}`;
+  renderDice();renderSeats();orientCenter();
+  const h=$('hint');
+  if(!busy&&!h.classList.contains('flash')){
+    if(bot)h.textContent=`${p.name} está pensando...`;
+    else if(G.rolls===0)h.textContent='Toque no copo para lançar.';
+    else if(left>0&&G.baixo)h.textContent='Baixo pedido: no próximo lançamento vale a face de baixo.';
+    else if(left>0)h.textContent='Toque nos dados para guardar, ou escolha uma casa na cartela.';
+    else h.textContent='Escolha uma casa na sua cartela.';
+  }
+  const m=$('mark');
+  if(G.sel&&G.rolls>0&&!busy){const pts=points(G.sel,G.dice,deBoca());m.disabled=bot;m.textContent=pts?`Marcar ${pts} em ${CATS[G.sel].n}`:`Riscar ${CATS[G.sel].n}`}
+  else{m.disabled=true;m.textContent=G.rolls?'Escolha uma casa na cartela':'Lance os dados primeiro'}
+}
+
+/* ---------- Jogadas ---------- */
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+/* Aviso rápido no meio da tela */
+let toastT=null;
+function toast(msg){const t=$('toast');t.textContent=msg;t.hidden=false;t.classList.remove('show');void t.offsetWidth;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>{t.hidden=true},3200)}
+function checkVoid(cat){if(cancelled(cat)){toast(`${CATS[cat].n} anulada: todos fizeram ${G.players[0].sc[cat]}!`);tone(300,.25,'triangle',.12);tone(220,.3,'triangle',.1,.15)}}
+/* Nome da jogada boa que está nos dados ('' se não tiver) */
+function kindOf(d){
+  const c=[0,0,0,0,0,0,0];d.forEach(v=>c[v]++);const s=[...d].sort().join('');
+  if(c.includes(5))return 'General';if(c.includes(4))return 'Quadrada';if(c.includes(3)&&c.includes(2))return 'Full';if(s==='12345'||s==='23456')return 'Seguida';return '';
+}
+/* Chance exata de a jogada sair neste lançamento: testa todas as combinações dos dados que rolaram (os guardados ficam fixos) */
+function chanceOf(kind,dice,held){
+  let hit=0,tot=0;const go=a=>{if(a.length===5){tot++;if(kindOf(a)===kind)hit++;return}for(let v=1;v<=6;v++){a.push(v);go(a);a.pop()}};
+  go(dice.filter((_,i)=>held[i]));return hit/tot;
+}
+const pctTxt=x=>(x>=10?x.toFixed(0):x>=1?x.toFixed(1):x.toPrecision(2)).replace('.',',')+'%';
+/* Mostra o nome da jogada boa que está nos dados e, com um brilho discreto, a chance de ela ter saído */
+let comboT=null;
+function announce(held){
+  const kind=kindOf(G.dice),h=$('hint');
+  if(!kind){h.classList.remove('flash');return ''}
+  const p=chanceOf(kind,G.dice,held);
+  h.innerHTML=`${kind}!${G.rolls===1?' De boca!':''}${p<1?`<small class="odds">chance de ${pctTxt(p*100)} · 1 em ${Math.round(1/p).toLocaleString('pt-BR')}</small>`:''}`;
+  h.classList.add('flash');
+  const d=$('dice');d.classList.remove('combo');void d.offsetWidth;d.classList.add('combo');clearTimeout(comboT);comboT=setTimeout(()=>d.classList.remove('combo'),1600);
+  if(p<1)tone(1320,.18,'sine',.06,.1);
+  return kind+'!';
+}
+async function doRoll(){
+  if(busy||G.over||G.rolls>=3)return;
+  const g=G;
+  audio();busy=true;G.sel=null;$('hint').classList.remove('flash');$('hint').textContent='Chacoalhando...';
+  if(G.rolls===0)G.held=[0,0,0,0,0];
+  render();
+  $('roll').classList.add('shake');
+  const rt=setInterval(rattle,70),t0=Date.now(),dur=reduce?250:800;
+  while(Date.now()-t0<dur&&G===g){
+    G.dice=G.dice.map((v,i)=>G.held[i]?v:1+Math.floor(Math.random()*6));
+    renderDice();$('dice').querySelectorAll('.die').forEach((d,i)=>{if(!G.held[i])d.classList.add('tumble')});
+    await wait(90);
+  }
+  clearInterval(rt);$('roll').classList.remove('shake');
+  if(G!==g)return;
+  G.dice=G.dice.map((v,i)=>G.held[i]?v:1+Math.floor(Math.random()*6));
+  const held=[...G.held],fell=G.held.map(x=>!x),baixo=G.rolls>0&&G.baixo;
+  G.rolls++;G.baixo=false;landSound();
+  if(baixo){
+    /* Os dados caem e então são virados: vale a face de baixo (as faces opostas somam 7) */
+    renderDice();$('dice').querySelectorAll('.die').forEach((d,i)=>{if(fell[i])d.classList.add('land')});
+    $('hint').textContent='Baixo! Virando os dados...';
+    await wait(reduce?200:650);
+    if(G!==g)return;
+    G.dice=G.dice.map((v,i)=>fell[i]?7-v:v);flipSound();
+  }
+  busy=false;
+  const c=[0,0,0,0,0,0,0];G.dice.forEach(v=>c[v]++);
+  const call=announce(held);
+  if(!call&&baixo){$('hint').textContent='Baixo! Vale a face de baixo.';$('hint').classList.add('flash')}
+  render();
+  $('dice').querySelectorAll('.die').forEach((d,i)=>{if(fell[i])d.classList.add(baixo?'flip':'land')});
+  if(G.rolls===1&&c.includes(5)){G.over=true;G.bocaBy=G.cur;save();fanfare();await wait(1000);showEnd(G.cur);return}
+  if(call==='General!')fanfare();
+  save();
+}
+$('roll').onclick=()=>{if(!isBot())doRoll()};
+$('baixo').onclick=()=>{
+  if(busy||isBot()||G.over||G.rolls===0||G.rolls>=3)return;
+  G.baixo=!G.baixo;tone(G.baixo?380:520,.08,'triangle',.1);$('hint').classList.remove('flash');save();render();
+};
+async function doMark(){
+  if(!G.sel||busy)return;
+  G.players[G.cur].sc[G.sel]=points(G.sel,G.dice,deBoca());
+  markSound();$('hint').classList.remove('flash');checkVoid(G.sel);
+  if(G.players.every(x=>Object.keys(x.sc).length===NCATS)){G.over=true;G.sel=null;G.rolls=0;save();render();await wait(500);showEnd(null);return}
+  G.cur=nextPlayer(G.cur);G.held=[0,0,0,0,0];G.rolls=0;G.sel=null;G.baixo=false;viewing=null;
+  save();render();maybeBot();
+}
+$('mark').onclick=()=>{if(!isBot())doMark()};
+
+/* ---------- Só marcador ---------- */
+/* Ranking ao vivo (empate divide a posição) */
+function ranking(){
+  const r=G.players.map((p,i)=>({i,t:total(p),f:Object.keys(p.sc).length})).sort((a,b)=>b.t-a.t);
+  r.forEach((x,k)=>x.pos=k&&x.t===r[k-1].t?r[k-1].pos:k+1);return r;
+}
+function renderScorer(){
+  const cmp=compact(),show=viewing??0,many=G.players.length>4;
+  $('who').innerHTML=`<small>Partida ${G.games+1} · ${cmp?'toque num nome para ver a cartela':'toque numa casa para marcar'}</small>Placar ao vivo`;
+  /* No modo compacto, o ranking também escolhe qual cartela aparece embaixo */
+  $('liveRank').classList.toggle('many',many);
+  $('liveRank').innerHTML=ranking().map(x=>{const p=G.players[x.i],tag=cmp?'button':'div';
+    return `<li><${tag} class="lr${x.pos===1&&x.t>0?' lead':''}${cmp&&x.i===show?' on':''}" data-i="${x.i}"${cmp?` aria-pressed="${x.i===show}"`:''}><span class="pos">${x.pos===1&&x.t>0?'👑':x.pos+'º'}</span><b>${esc(p.name)}</b><small>${many?'':`${x.f}/${NCATS}`}${G.wins[x.i]?`${many?'':' · '}🏆${many?'':' '}${G.wins[x.i]}`:''}</small><span class="pts">${x.t}</span></${tag}></li>`}).join('');
+  $('liveRank').querySelectorAll('button.lr').forEach(b=>b.onclick=()=>{viewing=+b.dataset.i;tone(560,.04,'triangle',.08);render()});
+  $('finishMatch').disabled=G.players.every(p=>!Object.keys(p.sc).length);
+  renderSeats();orientCenter();
+}
+/* Escolher os pontos de uma casa: só aparecem valores possíveis no bozó */
+const COMBO={full:[10,15],seq:[20,25],quad:[30,35]};
+let pickT=null;
+function openPick(i,cat){
+  if(G.over)return;
+  const p=G.players[i],k=CATS[cat],v=p.sc[cat];let opts;
+  if(k.f)opts=[1,2,3,4,5].map(n=>({v:n*k.f,l:n*k.f,s:`${n} dado${n>1?'s':''}`}));
+  else if(cat==='gen')opts=[{v:40,l:40,s:'General'},{v:'boca',l:'De boca',s:'vence na hora!'}];
+  else opts=[{v:COMBO[cat][0],l:COMBO[cat][0],s:k.n},{v:COMBO[cat][1],l:COMBO[cat][1],s:'de boca'}];
+  opts.push({v:0,l:'X',s:'riscar'});
+  if(v!==undefined)opts.push({v:'del',l:'Apagar',s:'deixar vazia'});
+  $('pickBox').innerHTML=`<h2 id="pickTitle">${k.n}<small>${esc(p.name)}</small></h2>
+    <div class="opts">${opts.map(o=>`<button class="opt${o.v===v?' on':''}${o.v===0?' x':''}${o.v==='boca'?' boca':''}" data-v="${o.v}"><b>${o.l}</b><small>${o.s}</small></button>`).join('')}</div>
+    <button class="ghost" id="pickCancel">Cancelar</button>`;
+  /* Na mesa, o quadro fica virado para quem é dono da cartela */
+  let r=0;if(!compact()){const map=SEATS[G.players.length];r=ROT[Object.keys(map).find(k=>map[k].includes(i))]||0}
+  $('pickBox').style.transform=`rotate(${r}deg)`;
+  $('pick').hidden=false;tone(520,.05,'triangle',.08);
+  $('pickBox').querySelectorAll('.opt').forEach(b=>b.onclick=()=>setScore(i,cat,b.dataset.v));
+  $('pickCancel').onclick=closePick;$('pickBox').querySelector('.opt').focus();
+}
+function closePick(){$('pick').hidden=true}
+$('pick').onclick=e=>{if(e.target===$('pick'))closePick()};
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('pick').hidden)closePick();$('exp').hidden=true});
+async function setScore(i,cat,v){
+  closePick();const p=G.players[i];
+  if(v==='del'){delete p.sc[cat];tone(400,.08,'triangle',.1);save();render();return}
+  if(v==='boca'){p.sc.gen=40;G.over=true;G.bocaBy=i;save();render();fanfare();await wait(900);showEnd(i);return}
+  p.sc[cat]=+v;markSound();checkVoid(cat);save();render();
+  if(G.players.every(x=>Object.keys(x.sc).length===NCATS)){G.over=true;save();await wait(600);showEnd(null)}
+}
+/* Finalizar a partida a qualquer momento (às vezes o jogo já está ganho) */
+let finishT=null;
+$('finishMatch').onclick=()=>{
+  const b=$('finishMatch');
+  if(!finishT){b.textContent='Toque de novo para finalizar';b.classList.add('ask');finishT=setTimeout(()=>{b.textContent='🏁 Finalizar partida';b.classList.remove('ask');finishT=null},3000);return}
+  clearTimeout(finishT);finishT=null;b.textContent='🏁 Finalizar partida';b.classList.remove('ask');
+  G.over=true;save();showEnd(null,!G.players.every(x=>Object.keys(x.sc).length===NCATS));
+};
+let clearT=null;
+$('clearMatch').onclick=()=>{
+  const b=$('clearMatch');
+  if(!clearT){b.textContent='Toque de novo para zerar a partida';b.classList.add('ask');clearT=setTimeout(()=>{b.textContent='↺ Zerar partida';b.classList.remove('ask');clearT=null},3000);return}
+  clearTimeout(clearT);clearT=null;b.textContent='↺ Zerar partida';b.classList.remove('ask');
+  G.players.forEach(p=>p.sc={});tone(300,.2,'triangle',.15);save();render();
+};
+
+/* ---------- Computador ---------- */
+/* Quanto cada casa costuma render: o computador evita gastar uma casa boa com pouco ponto e, se tiver que riscar, risca a que vale menos */
+const EXP={'1':2.1,'2':4.2,'3':6.3,'4':8.4,'5':10.5,'6':12.6,full:6,seq:9,quad:8,gen:5};
+function botPlan(){
+  const p=G.players[G.cur],open=Object.keys(CATS).filter(c=>p.sc[c]===undefined);
+  const best=(d,boca)=>{let bc=null,bv=-1e9;for(const c of open){const v=points(c,d,boca)-EXP[c];if(v>bv){bv=v;bc=c}}return [bv,bc]};
+  const [nowV,nowC]=best(G.dice,deBoca());
+  if(G.rolls>=3)return {cat:nowC};
+  /* Testa cada jeito de guardar os dados e simula o próximo lançamento */
+  const more=3-G.rolls-1>0?1.5:0;let hold=null,bv=nowV;
+  for(let m=0;m<31;m++){
+    let sum=0;const N=150;
+    for(let k=0;k<N;k++)sum+=best(G.dice.map((v,i)=>m>>i&1?v:1+Math.floor(Math.random()*6)),false)[0];
+    const v=sum/N+more;
+    if(v>bv){bv=v;hold=m}
+  }
+  return hold===null?{cat:nowC}:{hold};
+}
+let botRunning=false;
+async function botTurn(){
+  botRunning=true;
+  const g=G,me=G.cur,still=()=>G===g&&!G.over&&G.cur===me&&!$('game').hidden;
+  try{
+    await wait(900);
+    while(still()){
+      if(G.rolls===0){await doRoll();await wait(1000);continue}
+      const plan=botPlan();
+      if(plan.cat){G.sel=plan.cat;tone(520,.05,'triangle',.08);render();await wait(1100);if(still())await doMark();break}
+      const held=G.dice.map((_,i)=>plan.hold>>i&1);
+      if(held.join()!==G.held.join()){G.held=held;tone(700,.06,'triangle',.1);render();await wait(800)}
+      if(!still())break;
+      /* De vez em quando o computador também pede baixo */
+      if(Math.random()<.2){G.baixo=true;tone(380,.08,'triangle',.1);render();await wait(700)}
+      if(!still())break;
+      await doRoll();await wait(1000);
+    }
+  }finally{botRunning=false}
+  maybeBot();
+}
+function maybeBot(){if(G&&!G.over&&!busy&&!botRunning&&isBot()&&!$('game').hidden)botTurn()}
+
+/* Destaques da cartela de um jogador para o resumo */
+const BEST={gen:{40:'General'},quad:{30:'Quadrada',35:'Quadrada de boca'},seq:{20:'Seguida',25:'Seguida de boca'},full:{10:'Full',15:'Full de boca'}};
+function highlights(p){
+  const h=Object.keys(BEST).filter(c=>BEST[c][p.sc[c]]).map(c=>BEST[c][p.sc[c]]+(cancelled(c)?' (anulada)':''));
+  const x=Object.values(p.sc).filter(v=>v===0).length;
+  if(x)h.push(`${x} risco${x>1?'s':''}`);
+  return h.join(' · ')||'Sem jogadas especiais';
+}
+/* Fim da partida: registra o resultado (uma vez só) e mostra o resumo */
+function showEnd(boca,early){
+  const t=G.players.map(total),best=Math.max(...t);
+  const winners=boca!==null?[boca]:t.map((v,i)=>v===best?i:-1).filter(i=>i>=0);
+  winners.forEach(i=>G.wins[i]++);G.games++;
+  G.hist=[...(G.hist||[]),{n:G.games,w:winners,t,d:new Date().toISOString(),e:!!early}].slice(-200);
+  G.over=true;G.end={boca,early:!!early};save();
+  renderEnd();if(boca===null)fanfare();
+}
+/* Desenha o resumo da última partida; ao reabrir o app na tela de fim, ele aparece de novo sem contar a vitória duas vezes */
+function renderEnd(){
+  const {boca,early}=G.end,winners=G.hist.at(-1).w;
+  let ranked=G.players.map((p,i)=>({n:esc(p.name),t:total(p),i})).sort((a,b)=>b.t-a.t);
+  if(boca!==null){
+    $('endTitle').textContent='General de boca!';$('endSub').textContent=`${G.players[boca].name} ganhou o jogo na hora!`;
+    ranked=[ranked.find(r=>r.i===boca),...ranked.filter(r=>r.i!==boca)];
+  }else{
+    $('endTitle').textContent=early?'Partida encerrada':'Fim de jogo!';
+    $('endSub').textContent=winners.length>1?`Empate entre ${winners.map(i=>G.players[i].name).join(' e ')}!`:`${G.players[winners[0]].name} venceu com ${ranked[0].t} pontos!`;
+    if(early)$('endSub').textContent+=' (finalizada antes de completar as cartelas)';
+  }
+  /* Resumo da partida: posição, pontos e destaques de cada um */
+  /* Empate divide a posição */
+  ranked.forEach((x,k)=>x.pos=k&&x.t===ranked[k-1].t&&boca===null?ranked[k-1].pos:k+1);
+  $('rank').classList.toggle('many',ranked.length>4);
+  $('rank').innerHTML=ranked.map(r=>{const p=G.players[r.i],win=winners.includes(r.i);
+    return `<li class="r${win?' win':''}"><div class="rl"><span>${win?'👑 ':`${r.pos}º `}${p.bot?'🤖 ':''}${r.n}</span><b>${r.t} pts</b></div><small>${highlights(p)}</small></li>`}).join('');
+  const voids=Object.keys(CATS).filter(cancelled);
+  $('voids').hidden=!voids.length;
+  $('voids').textContent=voids.length?`Anuladas (todos fizeram igual): ${voids.map(c=>`${CATS[c].n} ${G.players[0].sc[c]}`).join(', ')}`:'';
+  /* Mais de uma partida seguida: placar de vitórias e as últimas partidas */
+  const ser=$('series');ser.hidden=G.games<2;
+  if(G.games>=2){
+    const top=Math.max(1,...G.wins),order=G.players.map((p,i)=>i).sort((a,b)=>G.wins[b]-G.wins[a]);
+    const last=G.hist.slice(-5).reverse().map(h=>`<li>Partida ${h.n}: <b>${h.w.map(i=>esc(G.players[i].name)).join(' e ')}</b> · ${Math.max(...h.t)} pts</li>`).join('');
+    ser.innerHTML=`<h3>Placar de vitórias · ${G.games} partidas</h3>
+      <ol class="wins">${order.map(i=>`<li><span>${esc(G.players[i].name)}</span><i style="--w:${G.wins[i]/top*100}%"></i><b>🏆 ${G.wins[i]}</b></li>`).join('')}</ol>
+      <h3>Últimas partidas</h3><ol class="hist">${last}</ol>`;
+  }
+  $('toast').hidden=true;$('end').hidden=false;$('end').querySelector('.box').scrollTop=0;
+}
+/* Tela cheia, quando o navegador deixa */
+const fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement;
+const inApp=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
+if(!inApp&&(document.fullscreenEnabled||document.webkitFullscreenEnabled)){
+  $('full').hidden=false;
+  $('full').onclick=()=>{const d=document.documentElement;try{fsEl()?(document.exitFullscreen||document.webkitExitFullscreen).call(document):(d.requestFullscreen||d.webkitRequestFullscreen).call(d)}catch(e){}};
+  const lbl=()=>setBtn('full','⛶',fsEl()?'Sair da tela cheia':'Tela cheia');lbl();
+  document.addEventListener('fullscreenchange',lbl);document.addEventListener('webkitfullscreenchange',lbl);
+}
+/* A tela do tablet não apaga enquanto a partida está aberta */
+let lock=null;
+async function keepAwake(){try{if(!lock&&!$('game').hidden&&document.visibilityState==='visible'&&navigator.wakeLock){lock=await navigator.wakeLock.request('screen');lock.addEventListener('release',()=>{lock=null})}}catch(e){}}
+document.addEventListener('visibilitychange',keepAwake);
+function toSetup(){
+  $('end').hidden=true;$('game').hidden=true;$('setup').hidden=false;setMode(true);
+  /* Guarda os jogadores e o placar: ao reabrir, volta na tela inicial e, com os mesmos jogadores, o placar continua */
+  if(G){G.atSetup=true;save()}
+  renderSetup();
+}
+$('again').onclick=()=>newGame(specsOf(),keepOf(),G.mode);
+$('toSetup').onclick=()=>{nPlayers=G.players.length;draftNames=G.players.map(p=>p.name);draftBots=G.players.map(p=>!!p.bot);gameMode=G.mode||'jogo';toSetup()};
+$('rulesBtn').onclick=()=>{$('rules').hidden=false};
+$('closeRules').onclick=()=>{$('rules').hidden=true};
+let resetT=null;
+$('reset').onclick=()=>{
+  const b=$('reset');
+  if(!resetT){remindExport();setBtn('reset','↺','Toque de novo para zerar',1);resetT=setTimeout(()=>{setBtn('reset','↺','Zerar tudo');resetT=null},3000);return}
+  clearTimeout(resetT);resetT=null;setBtn('reset','↺','Zerar tudo');
+  newGame(specsOf(),null,G.mode);tone(300,.2,'triangle',.15);
+};
+/* ---------- Exportar resultados ---------- */
+const fmtDate=d=>new Date(d).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+function exportText(){
+  const P=G.players,L=[];
+  L.push('🎲 Bozó de Mesa — resultados',`${isScorer()?'Só marcador':'Jogo no app'} · exportado em ${fmtDate(Date.now())}`,'');
+  const order=P.map((_,i)=>i).sort((a,b)=>G.wins[b]-G.wins[a]);
+  L.push(`PLACAR DE VITÓRIAS (${G.games} partida${G.games===1?'':'s'})`);
+  let pos=0;order.forEach((i,k)=>{if(!k||G.wins[i]!==G.wins[order[k-1]])pos=k+1;L.push(`${pos}º ${P[i].name} — ${G.wins[i]} 🏆`)});
+  if(G.hist.length){
+    L.push('','PARTIDAS');
+    G.hist.forEach(h=>{
+      L.push(`Partida ${h.n}${h.d?` (${fmtDate(h.d)})`:''}${h.e?' · finalizada antes do fim':''} — venceu: ${h.w.map(i=>P[i].name).join(' e ')}`);
+      L.push('   '+P.map((p,i)=>({n:p.name,t:h.t[i]})).sort((a,b)=>b.t-a.t).map(x=>`${x.n} ${x.t}`).join(' · '));
+    });
+  }
+  if(!G.over&&P.some(p=>Object.keys(p.sc).length)){
+    L.push('',`PARTIDA ${G.games+1} (em andamento)`);
+    L.push('   '+P.map(p=>({n:p.name,t:total(p)})).sort((a,b)=>b.t-a.t).map(x=>`${x.n} ${x.t}`).join(' · '));
+  }
+  return L.join('\n');
+}
+/* Planilha: uma linha por jogador em cada partida (separador ; para o Excel em português) */
+function exportCsv(){
+  const q=v=>`"${String(v).replace(/"/g,'""')}"`,rows=[['Partida','Data','Jogador','Pontos','Venceu','Finalizada antes do fim']];
+  G.hist.forEach(h=>G.players.forEach((p,i)=>rows.push([h.n,h.d?fmtDate(h.d):'',p.name,h.t[i],h.w.includes(i)?'sim':'não',h.e?'sim':'não'])));
+  if(!G.over&&G.players.some(p=>Object.keys(p.sc).length))G.players.forEach(p=>rows.push([G.games+1,'em andamento',p.name,total(p),'','']));
+  return '\ufeff'+rows.map(r=>r.map(q).join(';')).join('\r\n');
+}
+/* Imagem do resultado: a última partida (ou a que está em andamento) e o placar de vitórias, no visual da mesa */
+function rrect(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath()}
+function fitTxt(x,t,max){if(x.measureText(t).width<=max)return t;while(t.length>1&&x.measureText(t+'…').width>max)t=t.slice(0,-1);return t+'…'}
+async function resultImage(){
+  await Promise.all(['400 40px "Alfa Slab One"','700 40px Caveat','800 20px Nunito','900 20px Nunito'].map(f=>document.fonts.load(f).catch(()=>{})));
+  const P=G.players,last=G.hist.at(-1),live=!last||(!G.over&&P.some(p=>Object.keys(p.sc).length));
+  const rows=P.map((p,i)=>({i,t:live?total(p):last.t[i]})).sort((a,b)=>b.t-a.t);
+  rows.forEach((r,k)=>r.pos=k&&r.t===rows[k-1].t?rows[k-1].pos:k+1);
+  const winners=live?[]:last.w,sub=live?`Partida ${G.games+1} · em andamento`:`Partida ${last.n}${last.d?' · '+fmtDate(last.d):''}`;
+  const W=1080,pad=80,rowH=88,series=G.games>0,order=P.map((_,i)=>i).sort((a,b)=>G.wins[b]-G.wins[a]);
+  const H=pad+200+rows.length*rowH+(series?110+P.length*64:0)+90;
+  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  x.fillStyle='#5a3518';x.fillRect(0,0,W,H);
+  const g=x.createRadialGradient(W/2,H*.4,60,W/2,H/2,Math.max(W,H)*.75);g.addColorStop(0,'#2b7a4f');g.addColorStop(1,'#1a4d31');
+  rrect(x,24,24,W-48,H-48,44);x.fillStyle=g;x.fill();x.lineWidth=12;x.strokeStyle='#8a5426';x.stroke();
+  x.textAlign='center';x.fillStyle='#f0b93a';x.font='400 78px "Alfa Slab One"';x.fillText('Bozó de Mesa',W/2,pad+78);
+  x.fillStyle='#cfe3d6';x.font='800 30px Nunito';x.fillText(sub+(isScorer()?' · só marcador':''),W/2,pad+128);
+  let y=pad+175;
+  for(const r of rows){
+    const win=winners.includes(r.i);rrect(x,pad,y,W-2*pad,rowH-14,18);x.fillStyle=win?'#f0b93a':'#fbf5e6';x.fill();
+    x.textAlign='left';x.fillStyle=win?'#24170e':'#9b8c78';x.font='900 32px Nunito';x.fillText(win?'👑':r.pos+'º',pad+28,y+50);
+    x.fillStyle=win?'#24170e':'#23306b';x.font='700 48px Caveat';x.fillText(fitTxt(x,P[r.i].name,W-2*pad-280),pad+112,y+54);
+    x.textAlign='right';x.fillText(r.t+' pts',W-pad-30,y+54);y+=rowH;
+  }
+  if(series){
+    y+=36;x.textAlign='left';x.fillStyle='#f0b93a';x.font='400 40px "Alfa Slab One"';x.fillText(`Placar de vitórias · ${G.games} partida${G.games>1?'s':''}`,pad,y+30);y+=74;
+    const top=Math.max(1,...G.wins),bx=pad+330,bw=W-2*pad-330-130;
+    for(const i of order){
+      x.fillStyle='#fbf5e6';x.font='700 40px Caveat';x.textAlign='left';x.fillText(fitTxt(x,P[i].name,300),pad,y+14);
+      rrect(x,bx,y-8,bw,22,11);x.fillStyle='#ffffff22';x.fill();
+      if(G.wins[i]){rrect(x,bx,y-8,Math.max(22,bw*G.wins[i]/top),22,11);x.fillStyle='#f0b93a';x.fill()}
+      x.textAlign='right';x.fillStyle='#fbf5e6';x.font='900 32px Nunito';x.fillText('🏆 '+G.wins[i],W-pad,y+14);y+=64;
+    }
+  }
+  x.textAlign='center';x.fillStyle='#cfe3d699';x.font='800 24px Nunito';x.fillText(`${fmtDate(Date.now())} · Bozó de Mesa 🎲`,W/2,H-pad+24);
+  return c;
+}
+/* No app Android: plugin próprio que manda imagem/texto direto para o WhatsApp (ou abre a lista de apps) */
+const sendNative=o=>window.Capacitor.nativePromise('Compartilhar','enviar',o);
+const WA='com.whatsapp',CAPTION='Resultado do Bozó de Mesa 🎲';
+let expCanvas=null;
+const canShareFiles=()=>{try{return !!(navigator.canShare&&navigator.canShare({files:[new File([''],'a.png',{type:'image/png'})]}))}catch(e){return false}};
+async function openExport(){
+  $('expText').textContent=exportText();
+  expCanvas=await resultImage();$('expImg').src=expCanvas.toDataURL('image/png');
+  $('expWa').hidden=!inApp;
+  $('expPic').textContent=inApp||canShareFiles()?'🖼️ Compartilhar imagem':'⬇️ Baixar imagem';
+  $('expPic').classList.toggle('big',!inApp);$('expPic').classList.toggle('ghost',inApp);
+  /* No app Android não há downloads; lá a planilha não aparece */
+  $('expCsv').hidden=inApp;
+  $('exp').hidden=false;$('exp').querySelector('.box').scrollTop=0;
+}
+const pngBase64=()=>expCanvas.toDataURL('image/png').split(',')[1];
+function downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+const fileName=ext=>`bozo-resultado-${new Date().toISOString().slice(0,10)}.${ext}`;
+$('expWa').onclick=async()=>{try{await sendNative({base64:pngBase64(),text:CAPTION,package:WA})}catch(e){toast('Não deu para abrir o WhatsApp.')}};
+$('expPic').onclick=async()=>{
+  if(inApp){try{await sendNative({base64:pngBase64(),text:CAPTION})}catch(e){toast('Não deu para compartilhar.')}return}
+  const blob=await new Promise(r=>expCanvas.toBlob(r,'image/png')),file=new File([blob],fileName('png'),{type:'image/png'});
+  if(canShareFiles()){try{await navigator.share({files:[file],title:CAPTION})}catch(e){}return}
+  downloadBlob(blob,file.name);toast('Imagem baixada.');
+};
+$('expWaTxt').onclick=async()=>{
+  const text=exportText();
+  if(inApp){try{await sendNative({text,package:WA})}catch(e){toast('Não deu para abrir o WhatsApp.')}return}
+  window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener');
+};
+$('exportBtn').onclick=openExport;$('exportEnd').onclick=openExport;
+$('expClose').onclick=()=>{$('exp').hidden=true};
+$('exp').onclick=e=>{if(e.target===$('exp'))$('exp').hidden=true};
+$('expCopy').onclick=async()=>{
+  const text=exportText();let ok=false;
+  try{await navigator.clipboard.writeText(text);ok=true}catch(e){
+    const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();try{ok=document.execCommand('copy')}catch(e){}t.remove();
+  }
+  toast(ok?'Copiado! Cole no WhatsApp, e-mail ou onde quiser.':'Não deu para copiar. Selecione o texto e copie.');
+};
+$('expCsv').onclick=()=>{
+  downloadBlob(new Blob([exportCsv()],{type:'text/csv;charset=utf-8'}),fileName('csv'));toast('Planilha baixada.');
+};
+/* Antes de zerar, lembra de exportar */
+const remindExport=()=>{if(G&&G.games>0)toast('Antes de zerar, toque em 📤 Exportar para guardar os resultados.')};
+
+/* Zerar o placar de partidas e começar do zero com os mesmos jogadores */
+let resetAllT=null;
+$('resetAll').onclick=()=>{
+  const b=$('resetAll');
+  if(!resetAllT){remindExport();b.textContent='Toque de novo para zerar';resetAllT=setTimeout(()=>{b.textContent='↺ Zerar placar';resetAllT=null},3000);return}
+  clearTimeout(resetAllT);resetAllT=null;b.textContent='↺ Zerar placar';
+  newGame(specsOf(),null,G.mode);tone(300,.2,'triangle',.15);
+};
+let confirmT=null;
+$('newgame').onclick=()=>{
+  const b=$('newgame');
+  if(!confirmT){setBtn('newgame','🏠','Toque de novo para sair',1);confirmT=setTimeout(()=>{setBtn('newgame','🏠','Novo jogo');confirmT=null},3000);return}
+  clearTimeout(confirmT);confirmT=null;setBtn('newgame','🏠','Novo jogo');
+  $('toSetup').onclick();
+};
+
+/* ---------- Botão voltar do Android ----------
+   O app chama window.bozoVoltar(): fecha a janela aberta; sem janela, pede um segundo toque para sair */
+let backT=null;
+window.bozoVoltar=()=>{
+  for(const id of ['pick','exp','rules']){if(!$(id).hidden){$(id).hidden=true;return 'ok'}}
+  if(backT){clearTimeout(backT);backT=null;return 'sair'}
+  toast('Aperte voltar de novo para sair. A partida fica salva.');backT=setTimeout(()=>{backT=null},2500);return 'ok';
+};
+
+/* ---------- Início ---------- */
+try{muted=localStorage.getItem('bozo-mute')==='1'}catch(e){}
+setSoundLabel();setBtn('newgame','🏠','Novo jogo');setBtn('reset','↺','Zerar tudo');
+const saved=load();
+/* Reabrir o app volta exatamente onde parou: tela inicial, partida em andamento ou resumo do fim */
+const full=()=>G.players.every(x=>Object.keys(x.sc).length===NCATS);
+if(saved&&saved.atSetup){G=saved;nPlayers=G.players.length;draftNames=G.players.map(p=>p.name);draftBots=G.players.map(p=>!!p.bot);gameMode=G.mode;setMode(true);renderSetup()}
+else if(saved){
+  G=saved;$('setup').hidden=true;$('game').hidden=false;setMode(true);render();
+  if(G.over&&G.end)renderEnd();else if(G.over)showEnd(G.bocaBy??null,G.bocaBy==null&&!full());else maybeBot();
+}else{setMode(true);renderSetup()}
+</script>
+
+</body></html>

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Bozó de Mesa</string>
+    <string name="title_activity_main">Bozó de Mesa</string>
+    <string name="package_name">com.felipetoschi.bozodemesa</string>
+    <string name="custom_url_scheme">com.felipetoschi.bozodemesa</string>
+</resources>
