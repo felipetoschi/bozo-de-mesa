@@ -38,7 +38,7 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 .names .pl.duoPl .plrow input{flex:1 1 0;width:0}
 .count button[aria-pressed="true"]{background:var(--gold);color:var(--ink);border-color:var(--gold)}
 .names{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;width:min(100%,680px)}
-.names .pl{display:flex;flex-direction:column;gap:4px;text-align:left}
+.names .pl{min-width:0;display:flex;flex-direction:column;gap:4px;text-align:left}
 .names label{font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
 .plrow{display:flex;gap:6px}
 .names input{flex:1;font:inherit;font-size:17px;padding:10px 12px;border-radius:10px;border:2px solid var(--line);background:#0003;color:var(--paper);min-width:0}
@@ -250,7 +250,14 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
   .phone .chips{width:var(--cw)}
   .phone .chip{padding:3px 6px}
   .phone .play{flex-direction:row;align-items:center}
-  .phone .play .side:first-child{flex-direction:column;gap:4px}
+  .phone .play .side:first-child{flex-direction:column;gap:4px;flex:none;width:72px}
+  .phone .play{gap:8px}
+  /* coluna do copo estreita e dados do tamanho que cabe, para nada sair da tela */
+  .phone #rollsLeft{font-size:12px;text-align:center;line-height:1.15}
+  .phone #baixo{font-size:12px;padding:4px 6px;min-height:32px}
+  .phone .play .side:last-child{flex:1;min-width:0}
+  .phone .dice{width:100%}
+  .phone .die{width:clamp(24px,calc((100% - 24px) / 5),52px)}
   .phone .center{align-self:center}
 }
 /* ---------- Tela inicial: jogar no app ou só marcar ---------- */
