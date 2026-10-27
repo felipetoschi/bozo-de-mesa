@@ -43,6 +43,12 @@ jobs:
           java-version: 21
           cache: gradle
 
+      - name: Versão e data/hora no jogo
+        run: |
+          HORA=$(TZ=America/Sao_Paulo date -d @"$(git log -1 --format=%ct)" '+%d/%m/%Y %H:%M')
+          sed -i "s|__VERSAO__|Versão 1.0.$VERSION_CODE · atualizada em $HORA|" app/www/index.html
+          grep -q "Versão 1.0.$VERSION_CODE" app/www/index.html
+
       - name: Instalar dependências e copiar o jogo para o projeto Android
         working-directory: app
         run: |

@@ -38,6 +38,7 @@ O app não carrega o `@capacitor/core` no JS: para falar com o Android use `wind
 - Resumo no fim da partida; placar de vitórias e histórico mantidos **com os mesmos jogadores até "Zerar placar"/"Zerar tudo"**.
 - Salva tudo: reabrir volta na partida, no resumo ou na tela inicial.
 - Exportar: imagem do resultado (WhatsApp direto no app), texto, planilha .csv (navegador). Lembrete de exportar antes de zerar.
+- Versão visível na tela inicial e nas Regras: `const VERSAO='__VERSAO__'` é trocado na compilação — app: "Versão 1.0.N · atualizada em dd/mm/aaaa hh:mm" (N = número da compilação, igual ao de Releases); site: "Versão online · atualizada em ...". A data/hora é a do último commit (horário de Brasília), então app e site atualizados mostram a mesma.
 - Cartela minimalista "papel e caneta" (linhas riscadas à mão, letra Caveat).
 
 ## Situação da versão 1.0
@@ -48,7 +49,7 @@ O app não carrega o `@capacitor/core` no JS: para falar com o Android use `wind
 
 Falta decidir/fazer (só se o dono pedir):
 1. **Play Store** (ver `PUBLICAR.md`, passos 3 a 7). Recomendação já dada: publicar grátis e sem anúncios primeiro; anúncio intersticial no fim da partida só numa atualização futura.
-2. Opcional: número da versão visível no app; capturas da loja atualizadas (sem o marcador e a exportação).
+2. Opcional: capturas da loja atualizadas (sem o marcador e a exportação).
 
 O projeto começou num branch do repositório de perfil `felipetoschi/felipetoschi` (`ccr-ee8ee3ac-gefrkk`); este repositório é a continuação com histórico novo.
 

@@ -41,6 +41,7 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 .names input{flex:1;font:inherit;font-size:17px;padding:10px 12px;border-radius:10px;border:2px solid var(--line);background:#0003;color:var(--paper);min-width:0}
 .kind{flex:none;border:2px solid var(--line);background:#0003;color:var(--paper);border-radius:10px;padding:0 10px;font-weight:800;font-size:14px}
 .kind[aria-pressed="true"]{border-color:var(--gold);color:var(--gold)}
+.ver{display:block;margin:0;color:var(--muted);opacity:.75;font-size:12px;text-align:center}
 .vsbot{border:2px solid var(--gold);background:none;color:var(--gold);border-radius:14px;padding:10px 20px;font-weight:900;font-size:16px}
 .big{border:none;border-radius:14px;background:var(--gold);color:var(--ink);font-family:var(--display);font-size:22px;padding:14px 34px;box-shadow:0 5px 0 #a87a1e}
 .big:active{transform:translateY(3px);box-shadow:0 2px 0 #a87a1e}
@@ -352,6 +353,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
     <div class="names" id="names"></div>
     <button class="big" id="start">Começar</button>
     <button class="vsbot" id="vsBot">🤖 Jogar contra o computador</button>
+    <small class="ver"></small>
   </section>
 
   <!-- Jogo -->
@@ -418,6 +420,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
       <li>📤 Exportar: gera uma imagem com o resultado e o placar de vitórias para mandar no WhatsApp, e também o texto e (no navegador) uma planilha. Bom para guardar antes de zerar.</li>
       <li>O placar de partidas (🏆) continua enquanto forem os mesmos jogadores, até alguém tocar em "Zerar placar" ou "Zerar tudo".</li>
     </ul>
+    <p class="ver"></p>
     <div class="btns"><button class="big" id="closeRules">Entendi</button></div>
   </div>
 </div>
@@ -475,6 +478,9 @@ const P={a:[28,28],b:[72,28],c:[28,50],d:[50,50],e:[72,50],f:[28,72],g:[72,72]};
 const PIPS={1:'d',2:'ag',3:'adg',4:'abfg',5:'abdfg',6:'abcefg'};
 const BOTNAMES=['Robozó','Zé do Copo','Dona Sorte','Seu Dado'];
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* Versão e data/hora da atualização: o texto é colocado na compilação do app e do site (Actions) */
+const VERSAO='__VERSAO__';
+document.querySelectorAll('.ver').forEach(e=>e.textContent=VERSAO.startsWith('Vers')?VERSAO:'Versão de teste (sem número)');
 let G=null,nPlayers=2,busy=false,muted=false,draftNames=[],draftBots=[],gameMode='jogo';
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
 /* Só marcador: o jogo é com copo e dados de verdade e o app só marca os pontos */
