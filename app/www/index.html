@@ -246,6 +246,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
 @keyframes glow{0%{filter:none}35%{filter:drop-shadow(0 0 7px #f0b93a) drop-shadow(0 0 2px #f0b93a)}100%{filter:none}}
 
 /* ---------- Aviso rápido ---------- */
+.fogos{position:fixed;inset:0;width:100%;height:100%;z-index:50;pointer-events:none}
 .toast{position:fixed;left:50%;top:50%;z-index:40;transform:translate(-50%,-50%);max-width:min(90vw,420px);box-sizing:border-box;padding:12px 18px;border-radius:14px;background:var(--ink);color:var(--gold);font-weight:900;font-size:17px;text-align:center;box-shadow:0 10px 30px #000a;pointer-events:none}
 .toast.show{animation:toast 3.2s ease forwards}
 @keyframes toast{0%{opacity:0;transform:translate(-50%,-40%)}8%,85%{opacity:1;transform:translate(-50%,-50%)}100%{opacity:0;transform:translate(-50%,-50%)}}
@@ -403,7 +404,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
       <li>Ás a Sena: soma dos dados daquele número.</li>
       <li>Casa anulada: se todos os jogadores marcarem a mesma casa com os mesmos pontos (por exemplo, todos fizeram Quadrada 30), ela fica riscada e não conta na soma de ninguém.</li>
       <li>Full (3 + 2 iguais) 10, Seguida (1 a 5 ou 2 a 6) 20, Quadrada (4 iguais) 30, General (5 iguais) 40.</li>
-      <li>De boca (no primeiro lançamento): Full 15, Seguida 25, Quadrada 35. General de boca acaba o jogo e ganha na hora.</li>
+      <li>De boca (os 5 dados lançados juntos, sem guardar nenhum — no primeiro lançamento ou nos outros): Full 15, Seguida 25, Quadrada 35. General de boca acaba o jogo e ganha na hora.</li>
       <li>Na tela inicial, troque qualquer jogador para 🤖 Computador, ou toque em "Jogar contra o computador".</li>
       <li>Quando todas as cartelas estiverem cheias, ganha quem tiver mais pontos.</li>
       <li>Só marcador: para jogar com copo e dados de verdade, de 2 a 8 jogadores. Toque numa casa de qualquer cartela e escolha os pontos; toque de novo para corrigir. Com mais de 4 jogadores (ou no celular), toque no nome no ranking para ver a cartela de cada um.</li>
@@ -484,6 +485,29 @@ const rattle=()=>noise(.06,.5,1500+Math.random()*2500);
 const landSound=()=>{for(let i=0;i<5;i++)noise(.04,.6,3000+Math.random()*1500,i*.045)};
 const markSound=()=>{tone(660,.12,'triangle',.15);tone(990,.18,'triangle',.12,.08)};
 const flipSound=()=>{noise(.08,.5,2200);tone(380,.1,'triangle',.1,.05)};
+/* Fogos de artifício simples quando sai General (não bloqueia toques) */
+function fireworks(){
+  const cv=document.createElement('canvas'),x=cv.getContext('2d'),W=innerWidth,H=innerHeight,dpr=Math.min(devicePixelRatio||1,2);
+  cv.className='fogos';cv.width=W*dpr;cv.height=H*dpr;x.scale(dpr,dpr);document.body.appendChild(cv);
+  const cols=['#ffd54a','#ff6b6b','#6bd3ff','#9dff7a','#ff9df0','#ffffff'],parts=[],rockets=[],n=reduce?2:5;
+  for(let k=0;k<n;k++)rockets.push({t:k*380,x:W*(.2+Math.random()*.6),y:H,ty:H*(.15+Math.random()*.3),c:cols[k%cols.length],up:true});
+  const t0=performance.now();let last=t0;
+  const step=now=>{
+    const dt=Math.min(now-last,40)/16.7;last=now;
+    x.clearRect(0,0,W,H);
+    for(const r of rockets){
+      if(!r.up||now-t0<r.t)continue;
+      r.y-=H*.018*dt;x.fillStyle=r.c;x.beginPath();x.arc(r.x,r.y,2.5,0,7);x.fill();
+      if(r.y<=r.ty){r.up=false;tone(180+Math.random()*80,.15,'triangle',.05);
+        for(let i=0;i<40;i++){const a=i/40*Math.PI*2,v=2+Math.random()*2.5;parts.push({x:r.x,y:r.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,c:r.c})}}
+    }
+    for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=.05*dt;p.vx*=.98;p.l-=.012*dt;
+      if(p.l>0){x.globalAlpha=p.l;x.fillStyle=p.c;x.beginPath();x.arc(p.x,p.y,3,0,7);x.fill()}}
+    x.globalAlpha=1;
+    if(rockets.some(r=>r.up)||parts.some(p=>p.l>0))requestAnimationFrame(step);else cv.remove();
+  };
+  requestAnimationFrame(step);
+}
 const fanfare=()=>[523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,.22,'triangle',.18,i*.12));
 /* Botões da barra: ícone + texto (no celular aparece só o ícone, menos quando pede confirmação) */
 function setBtn(id,ic,tx,ask){const b=$(id);b.innerHTML=`<span class="ic">${ic}</span><span class="tx">${tx}</span>`;b.classList.toggle('ask',!!ask)}
@@ -505,7 +529,8 @@ function points(cat,dice,deBoca){
 /* Casa anulada: quando todos marcaram a mesma casa com os mesmos pontos (risco não conta), ela não vale para ninguém */
 function cancelled(cat){const v=G.players.map(p=>p.sc[cat]);return v.length>1&&v.every(x=>x!==undefined&&x>0&&x===v[0])}
 const total=p=>Object.entries(p.sc).reduce((a,[c,v])=>a+(cancelled(c)?0:v),0);
-const deBoca=()=>G.rolls===1;
+/* De boca: a jogada saiu com os 5 dados lançados juntos (nenhum guardado), em qualquer lançamento */
+const deBoca=()=>G.rolls>0&&(G.boca??G.rolls===1);
 
 /* ---------- Salvar ---------- */
 function save(){try{localStorage.setItem('bozo-game2',JSON.stringify(G))}catch(e){}}
@@ -677,7 +702,7 @@ function announce(held){
   const kind=kindOf(G.dice),h=$('hint');
   if(!kind){h.classList.remove('flash');return ''}
   const p=chanceOf(kind,G.dice,held);
-  h.innerHTML=`${kind}!${G.rolls===1?' De boca!':''}${p<1?`<small class="odds">chance de ${pctTxt(p*100)} · 1 em ${Math.round(1/p).toLocaleString('pt-BR')}</small>`:''}`;
+  h.innerHTML=`${kind}!${deBoca()?' De boca!':''}${p<1?`<small class="odds">chance de ${pctTxt(p*100)} · 1 em ${Math.round(1/p).toLocaleString('pt-BR')}</small>`:''}`;
   h.classList.add('flash');
   const d=$('dice');d.classList.remove('combo');void d.offsetWidth;d.classList.add('combo');clearTimeout(comboT);comboT=setTimeout(()=>d.classList.remove('combo'),1600);
   if(p<1)tone(1320,.18,'sine',.06,.1);
@@ -700,7 +725,7 @@ async function doRoll(){
   if(G!==g)return;
   G.dice=G.dice.map((v,i)=>G.held[i]?v:1+Math.floor(Math.random()*6));
   const held=[...G.held],fell=G.held.map(x=>!x),baixo=G.rolls>0&&G.baixo;
-  G.rolls++;G.baixo=false;landSound();
+  G.rolls++;G.boca=held.every(x=>!x);G.baixo=false;landSound();
   if(baixo){
     /* Os dados caem e então são virados: vale a face de baixo (as faces opostas somam 7) */
     renderDice();$('dice').querySelectorAll('.die').forEach((d,i)=>{if(fell[i])d.classList.add('land')});
@@ -715,8 +740,8 @@ async function doRoll(){
   if(!call&&baixo){$('hint').textContent='Baixo! Vale a face de baixo.';$('hint').classList.add('flash')}
   render();
   $('dice').querySelectorAll('.die').forEach((d,i)=>{if(fell[i])d.classList.add(baixo?'flip':'land')});
-  if(G.rolls===1&&c.includes(5)){G.over=true;G.bocaBy=G.cur;save();fanfare();await wait(1000);showEnd(G.cur);return}
-  if(call==='General!')fanfare();
+  if(deBoca()&&c.includes(5)){G.over=true;G.bocaBy=G.cur;save();fanfare();fireworks();await wait(1000);showEnd(G.cur);return}
+  if(call==='General!'){fanfare();fireworks()}
   save();
 }
 $('roll').onclick=()=>{if(!isBot())doRoll()};
@@ -729,7 +754,7 @@ async function doMark(){
   G.players[G.cur].sc[G.sel]=points(G.sel,G.dice,deBoca());
   markSound();$('hint').classList.remove('flash');checkVoid(G.sel);
   if(G.players.every(x=>Object.keys(x.sc).length===NCATS)){G.over=true;G.sel=null;G.rolls=0;save();render();await wait(500);showEnd(null);return}
-  G.cur=nextPlayer(G.cur);G.held=[0,0,0,0,0];G.rolls=0;G.sel=null;G.baixo=false;viewing=null;
+  G.cur=nextPlayer(G.cur);G.held=[0,0,0,0,0];G.rolls=0;G.boca=false;G.sel=null;G.baixo=false;viewing=null;
   save();render();maybeBot();
 }
 $('mark').onclick=()=>{if(!isBot())doMark()};
@@ -778,8 +803,9 @@ document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('pick')
 async function setScore(i,cat,v){
   closePick();const p=G.players[i];
   if(v==='del'){delete p.sc[cat];tone(400,.08,'triangle',.1);save();render();return}
-  if(v==='boca'){p.sc.gen=40;G.over=true;G.bocaBy=i;save();render();fanfare();await wait(900);showEnd(i);return}
+  if(v==='boca'){p.sc.gen=40;G.over=true;G.bocaBy=i;save();render();fanfare();fireworks();await wait(900);showEnd(i);return}
   p.sc[cat]=+v;markSound();checkVoid(cat);save();render();
+  if(cat==='gen'&&+v===40)fireworks();
   if(G.players.every(x=>Object.keys(x.sc).length===NCATS)){G.over=true;save();await wait(600);showEnd(null)}
 }
 /* Finalizar a partida a qualquer momento (às vezes o jogo já está ganho) */
@@ -810,7 +836,7 @@ function botPlan(){
   const more=3-G.rolls-1>0?1.5:0;let hold=null,bv=nowV;
   for(let m=0;m<31;m++){
     let sum=0;const N=150;
-    for(let k=0;k<N;k++)sum+=best(G.dice.map((v,i)=>m>>i&1?v:1+Math.floor(Math.random()*6)),false)[0];
+    for(let k=0;k<N;k++)sum+=best(G.dice.map((v,i)=>m>>i&1?v:1+Math.floor(Math.random()*6)),m===0)[0];
     const v=sum/N+more;
     if(v>bv){bv=v;hold=m}
   }
