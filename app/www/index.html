@@ -111,11 +111,6 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 @keyframes land{0%{transform:translateY(-14px) rotate(12deg)}70%{transform:translateY(2px)}100%{transform:none}}
 #baixo{border:2px solid var(--gold);background:#0004;color:var(--gold);border-radius:12px;padding:6px 12px;font-weight:900;font-size:14px;min-height:36px}
 #baixo:disabled{opacity:.35;cursor:default}
-/* Botão discreto de teste (só para o dono testar coisas) */
-#testBtn{order:9;white-space:nowrap;border:none;background:none;color:#fff6;font:inherit;font-size:11px;padding:2px 6px;text-decoration:underline}
-#testBtn.on{color:var(--gold);text-decoration:none;font-weight:800}
-.testOpt{display:flex;gap:10px;align-items:center;text-align:left;width:100%;border:2px solid #24170e22;background:#1f5a3a10;color:inherit;border-radius:12px;padding:10px 12px;font:inherit;font-weight:800}
-.testOpt.on{border-color:var(--gold);background:#f0b93a33}
 /* Dupla: os dois jogos lado a lado para escolher qual marcar */
 .duo{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .duo[hidden]{display:none}
@@ -423,7 +418,6 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
         <div class="side">
           <button id="roll" aria-label="Lançar os dados"><span class="cup">Lançar</span></button>
           <span id="rollsLeft">3 lançamentos</span>
-          <button id="testBtn" title="Opções de teste">teste</button>
           <button id="baixo" disabled aria-pressed="false" title="A partir do segundo lançamento: no próximo lançamento vale a face de baixo">Pedir baixo</button>
         </div>
         <div class="side">
@@ -459,14 +453,6 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
   </section>
 </div>
 
-<div class="overlay" id="test" hidden>
-  <div class="box" role="dialog" aria-modal="true" aria-labelledby="testTitle">
-    <h2 id="testTitle">Teste</h2>
-    <p>Opções só para testar o jogo.</p>
-    <button class="testOpt" id="testGen"></button>
-    <div class="btns"><button class="big" id="testClose">Fechar</button></div>
-  </div>
-</div>
 <div class="overlay" id="rules" hidden>
   <div class="box">
     <h2>Regras</h2>
@@ -759,8 +745,7 @@ function render(){
   $('roll').disabled=busy||left<=0||bot;
   /* Pedir baixo: só a partir do segundo lançamento, e vale para o próximo */
   const bx=$('baixo');bx.disabled=busy||bot||G.over||G.rolls===0||left<=0;
-  bx.classList.toggle('used',!!G.baixo);
-  const tb=$('testBtn');tb.classList.toggle('on',!!G.forceGen);tb.textContent=G.forceGen?'teste ✓':'teste';bx.setAttribute('aria-pressed',!!G.baixo);bx.textContent=G.baixo?'✓ Baixo pedido':'Pedir baixo';
+  bx.classList.toggle('used',!!G.baixo);bx.setAttribute('aria-pressed',!!G.baixo);bx.textContent=G.baixo?'✓ Baixo pedido':'Pedir baixo';
   $('rollsLeft').textContent=left===0?'Sem lançamentos':`${left} lançamento${left>1?'s':''}`;
   renderDice();renderSeats();orientCenter();
   const h=$('hint');
@@ -844,10 +829,8 @@ async function doRoll(){
   clearInterval(rt);$('roll').classList.remove('shake');
   if(G!==g)return;
   G.dice=G.dice.map((v,i)=>G.held[i]?v:1+Math.floor(Math.random()*6));
-  const held=[...G.held],fell=G.held.map(x=>!x),force=!!G.forceGen,baixo=G.rolls>0&&G.baixo&&!force;
-  /* Teste: General forçado sai com o valor de um dado guardado (ou qualquer um) e conta como General normal, nunca de boca */
-  if(force){const v=G.dice.find((_,i)=>held[i])||1+Math.floor(Math.random()*6);G.dice=G.dice.map(()=>v)}
-  G.rolls++;G.boca=!force&&held.every(x=>!x);G.baixo=false;G.forceGen=false;if(G.duo&&G.half===1)G.pick=1;landSound();
+  const held=[...G.held],fell=G.held.map(x=>!x),baixo=G.rolls>0&&G.baixo;
+  G.rolls++;G.boca=held.every(x=>!x);G.baixo=false;if(G.duo&&G.half===1)G.pick=1;landSound();
   if(baixo){
     /* Os dados caem e então são virados: vale a face de baixo (as faces opostas somam 7) */
     renderDice();$('dice').querySelectorAll('.die').forEach((d,i)=>{if(fell[i])d.classList.add('land')});
@@ -877,7 +860,7 @@ async function doMark(){
   G.players[G.cur].sc[G.sel]=points(G.sel,jDice(),jBoca());G.half=0;G.saved=null;G.pick=1;
   markSound();$('hint').classList.remove('flash');checkVoid(G.sel);
   if(G.players.every(x=>Object.keys(x.sc).length===NCATS)){G.over=true;G.sel=null;G.rolls=0;save();render();await wait(500);showEnd(null);return}
-  G.cur=nextPlayer(G.cur);G.held=[0,0,0,0,0];G.rolls=0;G.boca=false;G.forceGen=false;G.sel=null;G.baixo=false;viewing=null;
+  G.cur=nextPlayer(G.cur);G.held=[0,0,0,0,0];G.rolls=0;G.boca=false;G.sel=null;G.baixo=false;viewing=null;
   save();render();maybeBot();
 }
 $('mark').onclick=()=>{if(!isBot())doMark()};
@@ -921,13 +904,7 @@ function openPick(i,cat){
 }
 function closePick(){$('pick').hidden=true}
 $('pick').onclick=e=>{if(e.target===$('pick'))closePick()};
-document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('pick').hidden)closePick();$('exp').hidden=true;$('test').hidden=true});
-/* Teste: menu discreto dentro da partida; por enquanto só "Forçar general" (o próximo lançamento sai General normal, não de boca) */
-function renderTest(){const b=$('testGen');b.classList.toggle('on',!!G.forceGen);b.setAttribute('aria-pressed',!!G.forceGen);b.textContent=G.forceGen?'✓ Forçar general no próximo lançamento (ligado)':'🎲 Forçar general no próximo lançamento'}
-$('testBtn').onclick=()=>{if(!G||G.over||isScorer())return;renderTest();$('test').hidden=false;tone(520,.05,'triangle',.08)};
-$('testGen').onclick=()=>{if(busy||G.over)return;G.forceGen=!G.forceGen;tone(G.forceGen?880:520,.08,'triangle',.1);save();renderTest();render()};
-$('testClose').onclick=()=>{$('test').hidden=true};
-$('test').onclick=e=>{if(e.target===$('test'))$('test').hidden=true};
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('pick').hidden)closePick();$('exp').hidden=true});
 async function setScore(i,cat,v){
   closePick();const p=G.players[i];
   if(v==='del'){delete p.sc[cat];tone(400,.08,'triangle',.1);save();render();return}
