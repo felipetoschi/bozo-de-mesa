@@ -30,7 +30,7 @@ O app não carrega o `@capacitor/core` no JS: para falar com o Android use `wind
 - **Casa anulada**: quando **todos** marcam a mesma casa com os **mesmos pontos** (ex.: todos Quadrada 30), ela é riscada e não soma. Pontos diferentes (35 de boca × 30) **não** anulam; risco (0) nunca anula.
 - **Modo jogo: sem desfazer** — errou a marcação, é erro do jogador. **Modo marcador: pode corrigir/apagar.**
 - Ao sair Full/Seguida/Quadrada/General: brilho discreto + chance exata daquele lançamento.
-- Botão discreto **"teste"** na partida (modo jogo, embaixo do copo) abre o menu de teste do dono. Por enquanto só "Forçar general no próximo lançamento": sai General normal (40), **nunca de boca** (não encerra). Novas opções de teste entram nesse menu.
+- O botão discreto "teste" (menu com "Forçar general", que saía General normal, nunca de boca) foi usado e **retirado** a pedido do dono; se ele pedir de novo, ver o histórico do git (commit "volta o botão de teste").
 - **Dupla** (botão ao lado de 2/3/4, só no modo jogo, só pessoas): pergunta quantas duplas (2 a 4), uma cartela por dupla ("Ana e Bia"). Na vez da dupla o 1º joga (até 3 lançamentos, baixo etc.) e aperta "Guardar jogo"; o 2º joga; aparecem os dois jogos lado a lado e escolhe-se qual marcar (o jogo guardado pode ser marcado sem o 2º lançar). De boca vale para cada jogo; General de boca de qualquer um encerra e a dupla vence. Estado: `G.duo`, `G.half` (0/1), `G.saved` {dice,boca}, `G.pick` (0 guardado, 1 atual).
 
 ## Funcionalidades prontas
