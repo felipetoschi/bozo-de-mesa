@@ -41,6 +41,7 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 .names input{flex:1;font:inherit;font-size:17px;padding:10px 12px;border-radius:10px;border:2px solid var(--line);background:#0003;color:var(--paper);min-width:0}
 .kind{flex:none;border:2px solid var(--line);background:#0003;color:var(--paper);border-radius:10px;padding:0 10px;font-weight:800;font-size:14px}
 .kind[aria-pressed="true"]{border-color:var(--gold);color:var(--gold)}
+.ver{display:block;margin:0;color:var(--muted);opacity:.75;font-size:12px;text-align:center}
 .vsbot{border:2px solid var(--gold);background:none;color:var(--gold);border-radius:14px;padding:10px 20px;font-weight:900;font-size:16px}
 .big{border:none;border-radius:14px;background:var(--gold);color:var(--ink);font-family:var(--display);font-size:22px;padding:14px 34px;box-shadow:0 5px 0 #a87a1e}
 .big:active{transform:translateY(3px);box-shadow:0 2px 0 #a87a1e}
@@ -250,8 +251,8 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
 .fogos .burst{position:absolute;width:0;height:0}
 .fogos .burst i{position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;animation:fogo 1.5s cubic-bezier(.15,.7,.3,1) forwards}
 @keyframes fogo{0%{transform:translate(0,0) scale(1.3);opacity:1}70%{opacity:1}100%{transform:translate(var(--dx),calc(var(--dy) + 40px)) scale(.4);opacity:0}}
-.fogosTxt{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font-family:"Alfa Slab One",serif;font-size:clamp(40px,12vw,90px);line-height:1;color:var(--gold);text-shadow:0 0 18px #f0b93a,0 4px 0 #0008;animation:fogoTxt 3.4s ease-out forwards;white-space:nowrap}
-@keyframes fogoTxt{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}20%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0}}
+.fogosTxt{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(var(--r,0deg));font-family:"Alfa Slab One",serif;font-size:clamp(40px,12vmin,90px);line-height:1;color:var(--gold);text-shadow:0 0 18px #f0b93a,0 4px 0 #0008;animation:fogoTxt 3.4s ease-out forwards;white-space:nowrap}
+@keyframes fogoTxt{0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(.4)}12%{opacity:1;transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(1.1)}20%{transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(1)}80%{opacity:1}100%{opacity:0}}
 .toast{position:fixed;left:50%;top:50%;z-index:40;transform:translate(-50%,-50%);max-width:min(90vw,420px);box-sizing:border-box;padding:12px 18px;border-radius:14px;background:var(--ink);color:var(--gold);font-weight:900;font-size:17px;text-align:center;box-shadow:0 10px 30px #000a;pointer-events:none}
 .toast.show{animation:toast 3.2s ease forwards}
 @keyframes toast{0%{opacity:0;transform:translate(-50%,-40%)}8%,85%{opacity:1;transform:translate(-50%,-50%)}100%{opacity:0;transform:translate(-50%,-50%)}}
@@ -352,6 +353,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
     <div class="names" id="names"></div>
     <button class="big" id="start">Começar</button>
     <button class="vsbot" id="vsBot">🤖 Jogar contra o computador</button>
+    <small class="ver"></small>
   </section>
 
   <!-- Jogo -->
@@ -418,6 +420,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
       <li>📤 Exportar: gera uma imagem com o resultado e o placar de vitórias para mandar no WhatsApp, e também o texto e (no navegador) uma planilha. Bom para guardar antes de zerar.</li>
       <li>O placar de partidas (🏆) continua enquanto forem os mesmos jogadores, até alguém tocar em "Zerar placar" ou "Zerar tudo".</li>
     </ul>
+    <p class="ver"></p>
     <div class="btns"><button class="big" id="closeRules">Entendi</button></div>
   </div>
 </div>
@@ -475,6 +478,9 @@ const P={a:[28,28],b:[72,28],c:[28,50],d:[50,50],e:[72,50],f:[28,72],g:[72,72]};
 const PIPS={1:'d',2:'ag',3:'adg',4:'abfg',5:'abdfg',6:'abcefg'};
 const BOTNAMES=['Robozó','Zé do Copo','Dona Sorte','Seu Dado'];
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* Versão e data/hora da atualização: o texto é colocado na compilação do app e do site (Actions) */
+const VERSAO='__VERSAO__';
+document.querySelectorAll('.ver').forEach(e=>e.textContent=VERSAO.startsWith('Vers')?VERSAO:'Versão de teste (sem número)');
 let G=null,nPlayers=2,busy=false,muted=false,draftNames=[],draftBots=[],gameMode='jogo';
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
 /* Só marcador: o jogo é com copo e dados de verdade e o app só marca os pontos */
@@ -490,11 +496,11 @@ const rattle=()=>noise(.06,.5,1500+Math.random()*2500);
 const landSound=()=>{for(let i=0;i<5;i++)noise(.04,.6,3000+Math.random()*1500,i*.045)};
 const markSound=()=>{tone(660,.12,'triangle',.15);tone(990,.18,'triangle',.12,.08)};
 const flipSound=()=>{noise(.08,.5,2200);tone(380,.1,'triangle',.1,.05)};
-/* Fogos de artifício quando sai General: faíscas em HTML/CSS por cima de tudo (não bloqueia toques) */
-function fireworks(){
+/* Fogos de artifício quando sai General: faíscas em HTML/CSS por cima de tudo (não bloqueia toques); o "GENERAL!" fica virado para quem fez */
+function fireworks(who){
   document.querySelectorAll('.fogos').forEach(e=>e.remove());
   const box=document.createElement('div');box.className='fogos';box.setAttribute('aria-hidden','true');
-  box.innerHTML='<div class="fogosTxt">GENERAL!</div>';document.body.appendChild(box);
+  box.innerHTML='<div class="fogosTxt">GENERAL!</div>';box.style.setProperty('--r',(who==null?0:seatRot(who))+'deg');document.body.appendChild(box);
   const cols=['#ffd54a','#ff6b6b','#6bd3ff','#9dff7a','#ff9df0','#ffffff'],W=innerWidth,H=innerHeight,n=7;
   for(let k=0;k<n;k++)setTimeout(()=>{
     if(!box.isConnected)return;
@@ -639,6 +645,8 @@ function renderSeats(){
   document.querySelectorAll('.cell.mk').forEach(c=>c.onclick=()=>openPick(+c.dataset.p,c.dataset.c));
 }
 const ROT={bottom:0,top:180,right:-90,left:90};
+/* Quanto girar um aviso para ficar virado para o jogador i (só na mesa; no modo compacto fica reto) */
+const seatRot=i=>{if(compact())return 0;const map=SEATS[G.players.length];return ROT[Object.keys(map).find(k=>map[k].includes(i))]||0};
 let lastRot=0;
 function orientCenter(){
   if(!G||$('game').hidden)return;
@@ -738,8 +746,8 @@ async function doRoll(){
   if(!call&&baixo){$('hint').textContent='Baixo! Vale a face de baixo.';$('hint').classList.add('flash')}
   render();
   $('dice').querySelectorAll('.die').forEach((d,i)=>{if(fell[i])d.classList.add(baixo?'flip':'land')});
-  if(deBoca()&&c.includes(5)){G.over=true;G.bocaBy=G.cur;save();fanfare();fireworks();await wait(1000);showEnd(G.cur);return}
-  if(call==='General!'){fanfare();fireworks()}
+  if(deBoca()&&c.includes(5)){G.over=true;G.bocaBy=G.cur;save();fanfare();fireworks(G.cur);await wait(1000);showEnd(G.cur);return}
+  if(call==='General!'){fanfare();fireworks(G.cur)}
   save();
 }
 $('roll').onclick=()=>{if(!isBot())doRoll()};
@@ -789,8 +797,7 @@ function openPick(i,cat){
     <div class="opts">${opts.map(o=>`<button class="opt${o.v===v?' on':''}${o.v===0?' x':''}${o.v==='boca'?' boca':''}" data-v="${o.v}"><b>${o.l}</b><small>${o.s}</small></button>`).join('')}</div>
     <button class="ghost" id="pickCancel">Cancelar</button>`;
   /* Na mesa, o quadro fica virado para quem é dono da cartela */
-  let r=0;if(!compact()){const map=SEATS[G.players.length];r=ROT[Object.keys(map).find(k=>map[k].includes(i))]||0}
-  $('pickBox').style.transform=`rotate(${r}deg)`;
+  $('pickBox').style.transform=`rotate(${seatRot(i)}deg)`;
   $('pick').hidden=false;tone(520,.05,'triangle',.08);
   $('pickBox').querySelectorAll('.opt').forEach(b=>b.onclick=()=>setScore(i,cat,b.dataset.v));
   $('pickCancel').onclick=closePick;$('pickBox').querySelector('.opt').focus();
@@ -801,9 +808,9 @@ document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('pick')
 async function setScore(i,cat,v){
   closePick();const p=G.players[i];
   if(v==='del'){delete p.sc[cat];tone(400,.08,'triangle',.1);save();render();return}
-  if(v==='boca'){p.sc.gen=40;G.over=true;G.bocaBy=i;save();render();fanfare();fireworks();await wait(900);showEnd(i);return}
+  if(v==='boca'){p.sc.gen=40;G.over=true;G.bocaBy=i;save();render();fanfare();fireworks(i);await wait(900);showEnd(i);return}
   p.sc[cat]=+v;markSound();checkVoid(cat);save();render();
-  if(cat==='gen'&&+v===40)fireworks();
+  if(cat==='gen'&&+v===40)fireworks(i);
   if(G.players.every(x=>Object.keys(x.sc).length===NCATS)){G.over=true;save();await wait(600);showEnd(null)}
 }
 /* Finalizar a partida a qualquer momento (às vezes o jogo já está ganho) */
