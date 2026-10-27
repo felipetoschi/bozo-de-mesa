@@ -14,7 +14,7 @@ O dono do projeto fala português; responda em português, de forma simples (ele
 | Plugin nativo de compartilhar (imagem/texto direto no WhatsApp) | `app/android/app/src/main/java/com/felipetoschi/bozodemesa/CompartilharPlugin.java` |
 | Botão voltar, tela sempre acesa | `.../MainActivity.java` (chama `window.bozoVoltar()` do jogo) |
 | Ícone e abertura (fontes das imagens) | `app/assets/` → `npm run icons` dentro de `app/` |
-| Compilação do app | `.github/workflows/android.yml`: APK de teste sempre; com os segredos `KEYSTORE_BASE64` e `KEYSTORE_PASSWORD`, também APK e AAB assinados; rodando à mão com "publicar", cria uma versão em Releases (link de download para os amigos) |
+| Compilação do app | `.github/workflows/android.yml`: APK de teste sempre; com os segredos `KEYSTORE_BASE64` e `KEYSTORE_PASSWORD`, também APK e AAB assinados; **todo push no main (mudança em `app/`) cria sozinho uma versão em Releases** (link de download para os amigos); rodando à mão com "publicar" também |
 | Site (GitHub Pages) | `.github/workflows/site.yml` + `site/montar-site.py`: publica o jogo, o arquivo único `bozo-de-mesa.html` (fontes embutidas) e `privacidade.html` |
 | Material da Play Store, textos, política de privacidade | `loja/` |
 | Passo a passo de publicação | `PUBLICAR.md` |
@@ -46,7 +46,8 @@ O app não carrega o `@capacitor/core` no JS: para falar com o Android use `wind
 
 - ✅ GitHub Pages ligado: jogo, `privacidade.html` e `bozo-de-mesa.html` no ar.
 - ✅ Segredos da chave criados; APK assinado publicado em Releases (`v1.0.4` foi a primeira). O workflow confere a chave antes de assinar e diz qual segredo está errado.
-- Para soltar uma versão nova para os amigos: Actions → App Android → Run workflow com "publicar" marcado.
+- Versão nova para os amigos sai sozinha quando a mudança entra no main (o dono quer sempre pronto para o app). Link fixo: https://github.com/felipetoschi/bozo-de-mesa/releases/latest
+- O app confere ao abrir (API do GitHub, `releases/latest`) se há versão maior que a dele e avisa na tela inicial/Regras: "Tem versão nova! Toque para baixar" (baixa o APK), "App atualizado" ou "Não deu para conferir". No site não aparece.
 
 Falta decidir/fazer (só se o dono pedir):
 1. **Play Store** (ver `PUBLICAR.md`, passos 3 a 7). Recomendação já dada: publicar grátis e sem anúncios primeiro; anúncio intersticial no fim da partida só numa atualização futura.

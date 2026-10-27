@@ -44,6 +44,9 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 .names input{flex:1;font:inherit;font-size:17px;padding:10px 12px;border-radius:10px;border:2px solid var(--line);background:#0003;color:var(--paper);min-width:0}
 .kind{flex:none;border:2px solid var(--line);background:#0003;color:var(--paper);border-radius:10px;padding:0 10px;font-weight:800;font-size:14px}
 .kind[aria-pressed="true"]{border-color:var(--gold);color:var(--gold)}
+.upd{display:block;width:fit-content;max-width:100%;margin:0 auto;border:none;background:none;color:var(--muted);font:inherit;font-size:13px;font-weight:700;text-align:center}
+.upd[hidden]{display:none}
+.upd.new{background:var(--gold);color:var(--ink);border-radius:12px;padding:8px 14px;font-weight:900;font-size:15px;box-shadow:0 3px 0 #a87a1e}
 .ver{display:block;margin:0;color:var(--muted);opacity:.75;font-size:12px;text-align:center}
 .vsbot{border:2px solid var(--gold);background:none;color:var(--gold);border-radius:14px;padding:10px 20px;font-weight:900;font-size:16px}
 .big{border:none;border-radius:14px;background:var(--gold);color:var(--ink);font-family:var(--display);font-size:22px;padding:14px 34px;box-shadow:0 5px 0 #a87a1e}
@@ -373,6 +376,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
     <button class="big" id="start">Começar</button>
     <button class="vsbot" id="vsBot">🤖 Jogar contra o computador</button>
     <small class="ver"></small>
+    <button class="upd" hidden></button>
   </section>
 
   <!-- Jogo -->
@@ -442,6 +446,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
       <li>O placar de partidas (🏆) continua enquanto forem os mesmos jogadores, até alguém tocar em "Zerar placar" ou "Zerar tudo".</li>
     </ul>
     <p class="ver"></p>
+    <button class="upd" hidden></button>
     <div class="btns"><button class="big" id="closeRules">Entendi</button></div>
   </div>
 </div>
@@ -989,6 +994,24 @@ function renderEnd(){
 /* Tela cheia, quando o navegador deixa */
 const fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement;
 const inApp=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
+/* App: ao abrir, confere no GitHub se saiu versão nova e avisa na tela inicial e nas Regras (no site é sempre a mais nova) */
+let updUrl=null;
+async function checkUpdate(force){
+  const mine=+((VERSAO.match(/Versão 1\.0\.(\d+)/)||[])[1]||0);
+  if(!(inApp||force)||!mine)return;
+  const show=(txt,cls)=>document.querySelectorAll('.upd').forEach(e=>{e.hidden=false;e.className='upd '+cls;e.textContent=txt});
+  try{
+    const r=await fetch('https://api.github.com/repos/felipetoschi/bozo-de-mesa/releases/latest',{cache:'no-store'});
+    if(!r.ok)throw new Error(r.status);
+    const j=await r.json(),n=+String(j.tag_name||'').replace(/^v1\.0\./,'')||0;
+    if(n>mine){
+      const apk=(j.assets||[]).find(a=>/\.apk$/.test(a.name));updUrl=apk?apk.browser_download_url:j.html_url;
+      show(`⬇️ Tem versão nova (1.0.${n})! Toque para baixar`,'new');toast(`Tem versão nova do app: 1.0.${n}! Veja na tela inicial.`);
+    }else show('✓ App atualizado: esta é a versão mais nova','ok');
+  }catch(e){show('Não deu para conferir se tem versão nova (sem internet?)','off')}
+}
+document.querySelectorAll('.upd').forEach(b=>b.onclick=()=>{if(updUrl)location.href=updUrl});
+checkUpdate();
 if(!inApp&&(document.fullscreenEnabled||document.webkitFullscreenEnabled)){
   $('full').hidden=false;
   $('full').onclick=()=>{const d=document.documentElement;try{fsEl()?(document.exitFullscreen||document.webkitExitFullscreen).call(document):(d.requestFullscreen||d.webkitRequestFullscreen).call(d)}catch(e){}};
