@@ -2,8 +2,9 @@
 # - Sempre gera um APK de teste (para instalar direto no celular).
 # - Se os segredos KEYSTORE_BASE64 e KEYSTORE_PASSWORD existirem, gera também, assinados com a sua chave:
 #   o APK para os amigos (atualiza por cima sem perder o placar) e o AAB para a Play Store.
-# - Rodando à mão (Actions → App Android → Run workflow) com "publicar" marcado, cria uma versão em
-#   Releases com o APK assinado: o link de download para os amigos.
+# - Cada mudança no jogo que entra no main cria sozinha uma versão em Releases com o APK assinado
+#   (o link de download para os amigos; o app avisa quem já tem instalado).
+#   Rodando à mão (Actions → App Android → Run workflow) com "publicar" marcado, também publica.
 # Os arquivos ficam em Actions → (compilação) → Artifacts.
 name: App Android
 
@@ -109,7 +110,7 @@ jobs:
           path: app/android/app/build/outputs/bundle/release/*.aab
 
       - name: Publicar em Releases
-        if: env.HAS_KEY == 'true' && github.event_name == 'workflow_dispatch' && inputs.publicar
+        if: env.HAS_KEY == 'true' && ((github.event_name == 'workflow_dispatch' && inputs.publicar) || (github.event_name == 'push' && github.ref == 'refs/heads/main'))
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
