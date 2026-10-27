@@ -33,6 +33,9 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 #setup p{margin:0;color:var(--muted);font-size:18px}
 .count{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .count button{width:68px;height:68px;border-radius:16px;border:2px solid var(--line);background:#0003;color:var(--paper);font-family:var(--display);font-size:30px}
+.count button.duoBtn{width:auto;padding:0 16px;font-size:22px}
+.names .pl.duoPl{min-width:0}
+.names .pl.duoPl .plrow input{flex:1 1 0;width:0}
 .count button[aria-pressed="true"]{background:var(--gold);color:var(--ink);border-color:var(--gold)}
 .names{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;width:min(100%,680px)}
 .names .pl{display:flex;flex-direction:column;gap:4px;text-align:left}
@@ -105,6 +108,16 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 @keyframes land{0%{transform:translateY(-14px) rotate(12deg)}70%{transform:translateY(2px)}100%{transform:none}}
 #baixo{border:2px solid var(--gold);background:#0004;color:var(--gold);border-radius:12px;padding:6px 12px;font-weight:900;font-size:14px;min-height:36px}
 #baixo:disabled{opacity:.35;cursor:default}
+/* Dupla: os dois jogos lado a lado para escolher qual marcar */
+.duo{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.duo[hidden]{display:none}
+.duo button{display:flex;flex-direction:column;align-items:center;gap:3px;border:2px solid var(--line);background:#0003;color:var(--paper);border-radius:12px;padding:4px 8px;font:inherit}
+.duo button small{font-size:12px;font-weight:800;color:var(--muted);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.duo button.on{border-color:var(--gold);background:#f0b93a33}
+.duo button.on small{color:var(--gold)}
+.duo button:disabled{opacity:.45;cursor:default}
+.duo .mini{display:flex;gap:2px}
+.duo .mini svg{width:20px;height:20px;display:block}
 #baixo.used{background:var(--gold);color:var(--ink)}
 .die.flip{animation:flip .45s ease-in-out}
 @keyframes flip{0%{transform:rotateX(0)}50%{transform:rotateX(90deg) translateY(-10px)}100%{transform:rotateX(0)}}
@@ -170,6 +183,10 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
 .phone .mesa{padding:12px;border-radius:20px;box-shadow:inset 0 0 0 6px var(--wood2),inset 0 0 0 8px #0004,inset 0 0 40px #0008}
 .phone #setup{min-height:calc(100dvh - 32px);gap:14px;padding-block:8px}
 .phone .count button{width:56px;height:56px;font-size:24px}
+.phone #game.duoOn #hint:not(.flash){display:none}
+.phone .duo button{padding:2px 6px;gap:2px}
+.phone .duo .mini svg{width:17px;height:17px}
+.phone .count button.duoBtn{width:auto;font-size:18px;padding:0 12px}
 .phone .names{grid-template-columns:1fr}
 .phone #game{display:grid;min-height:calc(100vh - 32px);min-height:calc(100dvh - 32px);gap:8px;
   grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto 1fr auto;grid-template-areas:"chips" "center" "board" "tools";
@@ -372,6 +389,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
         <div class="side">
           <div class="dice" id="dice"></div>
           <p id="hint">Toque no copo para lançar.</p>
+          <div class="duo" id="duo" role="group" aria-label="Escolher o jogo da dupla" hidden></div>
         </div>
       </div>
       <button class="big" id="mark" disabled>Lance os dados primeiro</button>
@@ -414,6 +432,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
       <li>De boca (os 5 dados lançados juntos, sem guardar nenhum — no primeiro lançamento ou nos outros): Full 15, Seguida 25, Quadrada 35. General de boca acaba o jogo e ganha na hora, em qualquer rodada e em qualquer lançamento.</li>
       <li>Na tela inicial, troque qualquer jogador para 🤖 Computador, ou toque em "Jogar contra o computador".</li>
       <li>Quando todas as cartelas estiverem cheias, ganha quem tiver mais pontos.</li>
+      <li>Dupla: duas duplas, cada uma com uma cartela. Na vez da dupla, o primeiro joga (até 3 lançamentos) e aperta "Guardar jogo"; depois o parceiro joga. No fim aparecem os dois jogos: escolha um deles, toque na casa e aperte Marcar. General de boca de qualquer um dos dois ganha na hora.</li>
       <li>Só marcador: para jogar com copo e dados de verdade, de 2 a 8 jogadores. Toque numa casa de qualquer cartela e escolha os pontos; toque de novo para corrigir. Com mais de 4 jogadores (ou no celular), toque no nome no ranking para ver a cartela de cada um.</li>
       <li>A partida termina sozinha com General de boca ou quando todas as cartelas estão cheias. No marcador, "Finalizar partida" encerra a qualquer momento e ganha quem tiver mais pontos.</li>
       <li>Fechou o app? Ao abrir de novo, ele volta onde parou: na partida, no resumo ou na tela inicial, com o placar de vitórias.</li>
@@ -481,7 +500,7 @@ const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 /* Versão e data/hora da atualização: o texto é colocado na compilação do app e do site (Actions) */
 const VERSAO='__VERSAO__';
 document.querySelectorAll('.ver').forEach(e=>e.textContent=VERSAO.startsWith('Vers')?VERSAO:'Versão de teste (sem número)');
-let G=null,nPlayers=2,busy=false,muted=false,draftNames=[],draftBots=[],gameMode='jogo';
+let G=null,duoMode=false,nPlayers=2,busy=false,muted=false,draftNames=[],draftBots=[],gameMode='jogo';
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
 /* Só marcador: o jogo é com copo e dados de verdade e o app só marca os pontos */
 const isScorer=()=>!!(G&&G.mode==='marcador');
@@ -535,6 +554,11 @@ function cancelled(cat){const v=G.players.map(p=>p.sc[cat]);return v.length>1&&v
 const total=p=>Object.entries(p.sc).reduce((a,[c,v])=>a+(cancelled(c)?0:v),0);
 /* De boca: a jogada saiu com os 5 dados lançados juntos (nenhum guardado), em qualquer lançamento */
 const deBoca=()=>G.rolls>0&&(G.boca??G.rolls===1);
+/* Dupla: no 2º jogo da vez, dá para marcar o jogo guardado do parceiro (pick 0) ou o atual (pick 1) */
+const usingSaved=()=>!!(G.duo&&G.half===1&&G.saved&&G.pick===0);
+const jDice=()=>usingSaved()?G.saved.dice:G.dice;
+const jBoca=()=>usingSaved()?G.saved.boca:deBoca();
+const duoMember=()=>G.players[G.cur].duo[G.half||0];
 
 /* ---------- Salvar ---------- */
 function save(){try{localStorage.setItem('bozo-game2',JSON.stringify(G))}catch(e){}}
@@ -544,11 +568,18 @@ function load(){try{const g=JSON.parse(localStorage.getItem('bozo-game2'));if(g&
 function renderSetup(){
   $('modes').querySelectorAll('button').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.m===gameMode);b.onclick=()=>{keepNames();gameMode=b.dataset.m;tone(560,.05,'triangle',.1);renderSetup()}});
   $('vsBot').hidden=gameMode==='marcador';
+  /* Dupla: só jogando no app (no marcador, é só dar o nome da dupla a cada cartela) */
+  if(gameMode==='marcador')duoMode=false;
   /* No marcador cabem até 8 jogadores; jogando no app, até 4 */
   const counts=gameMode==='marcador'?[2,3,4,5,6,7,8]:[2,3,4];if(nPlayers>counts.at(-1))nPlayers=counts.at(-1);
   $('count').classList.toggle('many',counts.length>3);
-  $('count').innerHTML=counts.map(n=>`<button data-n="${n}" aria-pressed="${n===nPlayers}">${n}</button>`).join('');
-  $('count').querySelectorAll('button').forEach(b=>b.onclick=()=>{keepNames();nPlayers=+b.dataset.n;tone(600,.05,'triangle',.1);renderSetup()});
+  $('count').innerHTML=counts.map(n=>`<button data-n="${n}" aria-pressed="${!duoMode&&n===nPlayers}">${n}</button>`).join('')+(gameMode==='jogo'?`<button class="duoBtn" data-n="duo" aria-pressed="${duoMode}" title="Duas duplas: cada um da dupla joga e vocês escolhem qual jogo marcar">Dupla</button>`:'');
+  $('count').querySelectorAll('button').forEach(b=>b.onclick=()=>{keepNames();duoMode=b.dataset.n==='duo';if(!duoMode)nPlayers=+b.dataset.n;tone(600,.05,'triangle',.1);renderSetup()});
+  if(duoMode){
+    $('names').innerHTML=[0,1].map(d=>`<div class="pl duoPl"><label for="nome${d*2}">Dupla ${d+1}${isPhone()?'':' · '+sideOf(2,d)}</label>
+      <div class="plrow">${[0,1].map(k=>{const i=d*2+k;return `<input id="nome${i}" maxlength="12" placeholder="Jogador ${i+1}" value="${esc(draftNames[i]||'')}" aria-label="Dupla ${d+1}, jogador ${k+1}">`}).join('')}</div></div>`).join('');
+    return;
+  }
   $('names').innerHTML=Array.from({length:nPlayers},(_,i)=>{
     const bot=gameMode==='jogo'&&!!draftBots[i];
     return `<div class="pl"><label for="nome${i}">Jogador ${i+1}${isPhone()||nPlayers>4?'':' · '+sideOf(nPlayers,i)}</label>
@@ -559,22 +590,26 @@ function renderSetup(){
 function keepNames(){draftNames=Array.from({length:8},(_,i)=>{const el=$('nome'+i);return el?el.value:(draftNames[i]||'')})}
 $('start').onclick=()=>{
   keepNames();audio();
-  const specs=Array.from({length:nPlayers},(_,i)=>{const bot=gameMode==='jogo'&&!!draftBots[i];return {name:(draftNames[i]||'').trim()||(bot?BOTNAMES[i%4]:`Jogador ${i+1}`),bot}});
+  const nm=i=>(draftNames[i]||'').trim();
+  /* Dupla: cada cartela é de uma dupla ("Ana e Bia"; sem nomes, "Dupla 1") */
+  const specs=duoMode&&gameMode==='jogo'?[0,1].map(d=>{const a=nm(d*2),b=nm(d*2+1);return {name:a||b?`${a||'Jogador '+(d*2+1)} e ${b||'Jogador '+(d*2+2)}`:`Dupla ${d+1}`,duo:[a||`Jogador ${d*2+1}`,b||`Jogador ${d*2+2}`]}})
+    :Array.from({length:nPlayers},(_,i)=>{const bot=gameMode==='jogo'&&!!draftBots[i];return {name:nm(i)||(bot?BOTNAMES[i%4]:`Jogador ${i+1}`),bot}});
   /* Mesmos jogadores no mesmo modo: o placar de partidas continua até alguém zerar tudo */
-  const same=G&&G.mode===gameMode&&G.players.length===specs.length&&G.players.every((p,i)=>p.name===specs[i].name);
+  const same=G&&G.mode===gameMode&&!!G.duo===!!specs[0].duo&&G.players.length===specs.length&&G.players.every((p,i)=>p.name===specs[i].name&&String(p.duo)===String(specs[i].duo));
   newGame(specs,same?keepOf():null);
 };
 $('names').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'){e.preventDefault();$('start').onclick()}});
-$('vsBot').onclick=()=>{keepNames();gameMode='jogo';nPlayers=2;draftBots=[false,true];renderSetup();$('start').onclick()};
+$('vsBot').onclick=()=>{keepNames();gameMode='jogo';nPlayers=2;duoMode=false;draftBots=[false,true];renderSetup();$('start').onclick()};
 
 function newGame(specs,keep,mode=gameMode){
   if(mode==='jogo')specs=specs.slice(0,4);
-  G={players:specs.map(s=>({name:s.name,bot:mode==='jogo'&&!!s.bot,sc:{}})),cur:0,dice:[1,2,3,4,5],held:[0,0,0,0,0],rolls:0,sel:null,baixo:false,over:false,
+  const duo=mode==='jogo'&&!!specs[0].duo;
+  G={players:specs.map(s=>({name:s.name,bot:mode==='jogo'&&!!s.bot&&!duo,sc:{},...(duo?{duo:s.duo}:{})})),cur:0,duo,half:0,saved:null,pick:1,dice:[1,2,3,4,5],held:[0,0,0,0,0],rolls:0,sel:null,baixo:false,over:false,
      mode,wins:keep?keep.wins:specs.map(()=>0),games:keep?keep.games:0,hist:keep?keep.hist:[]};
   busy=false;viewing=null;$('hint').classList.remove('flash');$('pick').hidden=true;$('setup').hidden=true;$('game').hidden=false;setMode(true);
   save();$('end').hidden=true;$('setup').hidden=true;$('game').hidden=false;render();maybeBot();keepAwake();
 }
-const specsOf=()=>G.players.map(p=>({name:p.name,bot:p.bot}));
+const specsOf=()=>G.players.map(p=>({name:p.name,bot:p.bot,duo:p.duo}));
 const keepOf=()=>({wins:G.wins,games:G.games,hist:G.hist});
 
 /* ---------- Desenho ---------- */
@@ -598,14 +633,14 @@ function sheetLines(seed){
     line(100,4,100,148)+line(200,3,200,197)+line(5,50,296,51)+line(4,100,295,99)+line(206,150,294,151)}</svg>`;
 }
 function seatHTML(p,i){
-  const sc=isScorer(),cur=!sc&&i===G.cur,canPick=cur&&G.rolls>0&&!busy;
+  const sc=isScorer(),cur=!sc&&i===G.cur,canPick=cur&&!busy&&(G.duo?G.half===1&&(G.rolls>0||usingSaved()):G.rolls>0);
   const cells=LAYOUT.map((id,k)=>{
     const mid=k%3===2?' mid':'';
     if(!id)return `<div class="cell blank${mid}"></div>`;
     const v=p.sc[id],name=CATS[id].n;
     if(sc)return `<button class="cell mk${mid}${v===0?' zero':''}${v!==undefined&&cancelled(id)?' void':''}" data-p="${i}" data-c="${id}" aria-label="${name} de ${esc(p.name)}: ${v===undefined?'vazia':v===0?'riscada':v+' pontos'}"><small>${name}</small><b>${v===undefined?'':v===0?'X':v}</b></button>`;
     if(v!==undefined)return `<div class="cell${mid}${v===0?' zero':''}${cancelled(id)?' void':''}"${cancelled(id)?` title="Anulada: todos fizeram ${v}"`:''}><small>${name}</small><b>${v===0?'X':v}</b></div>`;
-    if(canPick){const pts=points(id,G.dice,deBoca());return `<button class="cell prev${mid}${G.sel===id?' sel':''}" data-c="${id}" aria-label="${name}: ${pts} pontos"><small>${name}</small><b>${pts||'–'}</b></button>`}
+    if(canPick){const pts=points(id,jDice(),jBoca());return `<button class="cell prev${mid}${G.sel===id?' sel':''}" data-c="${id}" aria-label="${name}: ${pts} pontos"><small>${name}</small><b>${pts||'–'}</b></button>`}
     return `<div class="cell${mid}"><small>${name}</small><b></b></div>`;
   }).join('');
   return `<div class="seat${cur?' cur':''}"><div class="seathead"><b>${p.bot?'🤖 ':''}${esc(p.name)}</b><em class="wins" title="Partidas ganhas">🏆 ${G.wins[i]}</em><span>${total(p)}</span></div><div class="sheet">${cells}${sheetLines(i+1)}</div></div>`;
@@ -665,7 +700,8 @@ function render(){
   $('game').classList.toggle('scorer',isScorer());
   if(isScorer())return renderScorer();
   const p=G.players[G.cur],filled=Object.keys(p.sc).length,left=3-G.rolls,bot=isBot();
-  $('who').innerHTML=`<small>Partida ${G.games+1} · Rodada ${Math.min(filled+1,NCATS)} de ${NCATS}</small>Vez de ${p.bot?'🤖 ':''}${esc(p.name)}`;
+  $('who').innerHTML=G.duo?`<small>Partida ${G.games+1} · Rodada ${Math.min(filled+1,NCATS)} de ${NCATS} · ${G.half?"2º":"1º"} jogo</small>Vez de ${esc(duoMember())}`
+    :`<small>Partida ${G.games+1} · Rodada ${Math.min(filled+1,NCATS)} de ${NCATS}</small>Vez de ${p.bot?'🤖 ':''}${esc(p.name)}`;
   $('roll').disabled=busy||left<=0||bot;
   /* Pedir baixo: só a partir do segundo lançamento, e vale para o próximo */
   const bx=$('baixo');bx.disabled=busy||bot||G.over||G.rolls===0||left<=0;
@@ -675,14 +711,37 @@ function render(){
   const h=$('hint');
   if(!busy&&!h.classList.contains('flash')){
     if(bot)h.textContent=`${p.name} está pensando...`;
+    else if(G.duo&&G.half===1&&G.rolls===0)h.textContent=`Lance os dados, ou marque já o jogo de ${p.duo[0]}.`;
     else if(G.rolls===0)h.textContent='Toque no copo para lançar.';
+    else if(G.duo&&G.half===0)h.textContent=left>0?'Toque nos dados para guardar, ou guarde o jogo para a dupla.':`Guarde o jogo e passe para ${p.duo[1]}.`;
+    else if(G.duo&&left>0&&!G.baixo)h.textContent='Lance de novo, ou escolha o jogo e a casa na cartela.';
+    else if(G.duo&&!G.baixo)h.textContent='Escolha o jogo e a casa na cartela.';
     else if(left>0&&G.baixo)h.textContent='Baixo pedido: no próximo lançamento vale a face de baixo.';
     else if(left>0)h.textContent='Toque nos dados para guardar, ou escolha uma casa na cartela.';
     else h.textContent='Escolha uma casa na sua cartela.';
   }
+  renderDuo();
   const m=$('mark');
-  if(G.sel&&G.rolls>0&&!busy){const pts=points(G.sel,G.dice,deBoca());m.disabled=bot;m.textContent=pts?`Marcar ${pts} em ${CATS[G.sel].n}`:`Riscar ${CATS[G.sel].n}`}
-  else{m.disabled=true;m.textContent=G.rolls?'Escolha uma casa na cartela':'Lance os dados primeiro'}
+  if(G.duo&&G.half===0){m.disabled=busy||G.rolls===0;m.textContent=G.rolls?`Guardar jogo e passar para ${p.duo[1]}`:'Lance os dados primeiro'}
+  else if(G.sel&&(G.rolls>0||usingSaved())&&!busy){const pts=points(G.sel,jDice(),jBoca()),of=G.duo?` · ${G.players[G.cur].duo[usingSaved()?0:1]}`:'';m.disabled=bot;m.textContent=pts?`Marcar ${pts} em ${CATS[G.sel].n}${of}`:`Riscar ${CATS[G.sel].n}${of}`}
+  else{m.disabled=true;m.textContent=G.rolls||usingSaved()?'Escolha uma casa na cartela':'Lance os dados primeiro'}
+}
+
+/* Dupla: no 2º jogo, mostra o jogo guardado do parceiro e o atual; toque num deles para marcar a partir dele */
+function renderDuo(){
+  const d=$('duo');
+  if(!G.duo||G.half!==1||!G.saved){d.hidden=true;d.innerHTML='';$('game').classList.remove('duoOn');return}
+  const p=G.players[G.cur],mini=v=>`<span class="mini">${v.map(dieSVG).join('')}</span>`;
+  const games=[{k:0,who:p.duo[0],dice:G.saved.dice,boca:G.saved.boca,ok:true},{k:1,who:p.duo[1],dice:G.dice,boca:deBoca(),ok:G.rolls>0}];
+  d.hidden=false;$('game').classList.add('duoOn');
+  d.innerHTML=games.map(g=>`<button data-k="${g.k}" class="${G.pick===g.k&&g.ok?'on':''}" aria-pressed="${G.pick===g.k&&g.ok}"${g.ok&&!busy?'':' disabled'}><small>Jogo de ${esc(g.who)}${g.ok&&g.boca&&kindOf(g.dice)?' · de boca':''}</small>${g.ok?mini(g.dice):'<small>ainda não jogou</small>'}</button>`).join('');
+  d.querySelectorAll('button').forEach(b=>b.onclick=()=>{if(busy)return;G.pick=+b.dataset.k;tone(600,.05,'triangle',.08);save();render()});
+}
+/* Dupla: o 1º jogador guarda o jogo dele e passa os dados para o parceiro */
+function saveHalf(){
+  if(busy||!G.duo||G.half!==0||G.rolls===0)return;
+  G.saved={dice:[...G.dice],boca:deBoca()};G.half=1;G.pick=0;G.rolls=0;G.held=[0,0,0,0,0];G.baixo=false;G.sel=null;G.boca=false;
+  tone(660,.1,'triangle',.12);tone(880,.12,'triangle',.1,.08);$('hint').classList.remove('flash');save();render();
 }
 
 /* ---------- Jogadas ---------- */
@@ -731,7 +790,7 @@ async function doRoll(){
   if(G!==g)return;
   G.dice=G.dice.map((v,i)=>G.held[i]?v:1+Math.floor(Math.random()*6));
   const held=[...G.held],fell=G.held.map(x=>!x),baixo=G.rolls>0&&G.baixo;
-  G.rolls++;G.boca=held.every(x=>!x);G.baixo=false;landSound();
+  G.rolls++;G.boca=held.every(x=>!x);G.baixo=false;if(G.duo&&G.half===1)G.pick=1;landSound();
   if(baixo){
     /* Os dados caem e então são virados: vale a face de baixo (as faces opostas somam 7) */
     renderDice();$('dice').querySelectorAll('.die').forEach((d,i)=>{if(fell[i])d.classList.add('land')});
@@ -756,8 +815,9 @@ $('baixo').onclick=()=>{
   G.baixo=!G.baixo;tone(G.baixo?380:520,.08,'triangle',.1);$('hint').classList.remove('flash');save();render();
 };
 async function doMark(){
-  if(!G.sel||busy)return;
-  G.players[G.cur].sc[G.sel]=points(G.sel,G.dice,deBoca());
+  if(G.duo&&G.half===0)return saveHalf();
+  if(!G.sel||busy||!(G.rolls>0||usingSaved()))return;
+  G.players[G.cur].sc[G.sel]=points(G.sel,jDice(),jBoca());G.half=0;G.saved=null;G.pick=1;
   markSound();$('hint').classList.remove('flash');checkVoid(G.sel);
   if(G.players.every(x=>Object.keys(x.sc).length===NCATS)){G.over=true;G.sel=null;G.rolls=0;save();render();await wait(500);showEnd(null);return}
   G.cur=nextPlayer(G.cur);G.held=[0,0,0,0,0];G.rolls=0;G.boca=false;G.sel=null;G.baixo=false;viewing=null;
@@ -892,11 +952,11 @@ function renderEnd(){
   const {boca,early}=G.end,winners=G.hist.at(-1).w;
   let ranked=G.players.map((p,i)=>({n:esc(p.name),t:total(p),i})).sort((a,b)=>b.t-a.t);
   if(boca!==null){
-    $('endTitle').textContent='General de boca!';$('endSub').textContent=`${G.players[boca].name} ganhou o jogo na hora!`;
+    $('endTitle').textContent='General de boca!';$('endSub').textContent=`${G.players[boca].name} ${G.duo?'ganharam':'ganhou'} o jogo na hora!`;
     ranked=[ranked.find(r=>r.i===boca),...ranked.filter(r=>r.i!==boca)];
   }else{
     $('endTitle').textContent=early?'Partida encerrada':'Fim de jogo!';
-    $('endSub').textContent=winners.length>1?`Empate entre ${winners.map(i=>G.players[i].name).join(' e ')}!`:`${G.players[winners[0]].name} venceu com ${ranked[0].t} pontos!`;
+    $('endSub').textContent=winners.length>1?`Empate entre ${winners.map(i=>G.players[i].name).join(' e ')}!`:`${G.players[winners[0]].name} ${G.duo?'venceram':'venceu'} com ${ranked[0].t} pontos!`;
     if(early)$('endSub').textContent+=' (finalizada antes de completar as cartelas)';
   }
   /* Resumo da partida: posição, pontos e destaques de cada um */
@@ -939,7 +999,9 @@ function toSetup(){
   renderSetup();
 }
 $('again').onclick=()=>newGame(specsOf(),keepOf(),G.mode);
-$('toSetup').onclick=()=>{nPlayers=G.players.length;draftNames=G.players.map(p=>p.name);draftBots=G.players.map(p=>!!p.bot);gameMode=G.mode||'jogo';toSetup()};
+$('toSetup').onclick=()=>{fromGame(G);gameMode=G.mode||'jogo';toSetup()};
+/* Volta à tela inicial com os mesmos nomes (na dupla, os quatro nomes) */
+function fromGame(g){duoMode=!!g.duo;nPlayers=g.duo?2:g.players.length;draftNames=g.duo?g.players.flatMap(p=>p.duo):g.players.map(p=>p.name);draftBots=g.players.map(p=>!!p.bot&&!g.duo)}
 $('rulesBtn').onclick=()=>{$('rules').hidden=false};
 $('closeRules').onclick=()=>{$('rules').hidden=true};
 let resetT=null;
@@ -1091,7 +1153,7 @@ setSoundLabel();setBtn('newgame','🏠','Novo jogo');setBtn('reset','↺','Zerar
 const saved=load();
 /* Reabrir o app volta exatamente onde parou: tela inicial, partida em andamento ou resumo do fim */
 const full=()=>G.players.every(x=>Object.keys(x.sc).length===NCATS);
-if(saved&&saved.atSetup){G=saved;nPlayers=G.players.length;draftNames=G.players.map(p=>p.name);draftBots=G.players.map(p=>!!p.bot);gameMode=G.mode;setMode(true);renderSetup()}
+if(saved&&saved.atSetup){G=saved;fromGame(G);gameMode=G.mode;setMode(true);renderSetup()}
 else if(saved){
   G=saved;$('setup').hidden=true;$('game').hidden=false;setMode(true);render();
   if(G.over&&G.end)renderEnd();else if(G.over)showEnd(G.bocaBy??null,G.bocaBy==null&&!full());else maybeBot();
