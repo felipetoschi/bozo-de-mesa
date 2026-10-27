@@ -114,7 +114,7 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 /* Botão discreto de teste (só para o dono testar coisas) */
 #testBtn{order:9;white-space:nowrap;border:none;background:none;color:#fff6;font:inherit;font-size:11px;padding:2px 6px;text-decoration:underline}
 #testBtn.on{color:var(--gold);text-decoration:none;font-weight:800}
-.testOpt{display:flex;gap:10px;align-items:center;text-align:left;width:100%;border:2px solid var(--line);background:#0003;color:inherit;border-radius:12px;padding:10px 12px;font:inherit;font-weight:800}
+.testOpt{display:flex;gap:10px;align-items:center;text-align:left;width:100%;border:2px solid #24170e22;background:#1f5a3a10;color:inherit;border-radius:12px;padding:10px 12px;font:inherit;font-weight:800}
 .testOpt.on{border-color:var(--gold);background:#f0b93a33}
 /* Dupla: os dois jogos lado a lado para escolher qual marcar */
 .duo{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
@@ -191,6 +191,8 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
 .phone .mesa{padding:12px;border-radius:20px;box-shadow:inset 0 0 0 6px var(--wood2),inset 0 0 0 8px #0004,inset 0 0 40px #0008}
 .phone #setup{min-height:calc(100dvh - 48px);gap:14px;padding-block:8px}
 /* Celular baixo: tela inicial mais junta, para o Começar aparecer sem rolar (ou rolando pouco) */
+/* Celular deitado: nomes em duas colunas, para o Começar aparecer mais cedo */
+@media (max-height:500px){body.phone .names{grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,760px)}.phone #setup h1{font-size:26px}.phone #setup>p{font-size:15px}}
 @media (max-height:700px){.phone #setup{gap:9px;padding-block:2px}.phone #setup h1{font-size:30px;margin:0}.phone .modes button{padding:6px 12px}.phone .count button{width:50px;height:50px}}
 .phone .count button{width:56px;height:56px;font-size:24px}
 .phone #game.duoOn #hint:not(.flash){display:none}
@@ -322,6 +324,8 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
 .pickbox h2 small{font-family:var(--hand);font-size:22px;color:var(--pen)}
 .opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .opt{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;border-radius:12px;border:2px solid #24170e22;background:#1f5a3a10;color:var(--ink);min-height:60px}
+/* Celular deitado: quadro de pontos mais baixo (4 por linha), para o Cancelar aparecer sem rolar */
+@media (max-height:500px){.pickbox{width:min(100%,560px);padding:12px 16px;gap:8px}.pickbox h2{font-size:20px;flex-direction:row;justify-content:center;align-items:baseline;gap:10px}.pickbox h2 small{font-size:18px}.opts{grid-template-columns:repeat(4,1fr);gap:6px}.opt{min-height:44px;padding:4px}.pickbox .ghost{padding:6px 12px}}
 .opt b{font-family:var(--hand);font-size:28px;line-height:1;color:var(--pen)}
 .opt small{font-size:11px;font-weight:800;color:#7a6250}
 .opt.on{background:var(--gold);border-color:var(--gold)}
@@ -341,6 +345,20 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
 .expbox .btns{position:sticky;bottom:-24px;margin:0 -24px -24px;padding:12px 24px 20px;background:var(--paper)}
 /* Botões sempre à vista, mesmo com muitos jogadores no resumo */
 .endbox .btns{position:sticky;bottom:-24px;margin:0 -24px -24px;padding:12px 24px 20px;background:linear-gradient(#fbf5e600,var(--paper) 14px)}
+/* Celular baixo (em pé): botões do resumo menores, sobra mais espaço para a classificação */
+@media (max-height:700px) and (max-width:699px){.endbox .btns .big{font-size:18px;padding:10px 20px}.endbox .btns .ghost{font-size:14px;padding:8px 12px}.endbox .btns{gap:8px;padding-top:10px}}
+/* Celular deitado: resumo e exportar em duas colunas (conteúdo à esquerda, botões à direita), nada fica por cima da lista */
+@media (max-height:500px) and (min-width:560px){
+  .endbox,.expbox{width:min(100%,780px);display:grid;grid-template-columns:minmax(0,1fr) 220px;column-gap:16px;row-gap:10px;align-content:start;padding:14px 16px}
+  .endbox>:not(.btns),.expbox>:not(.btns){grid-column:1}
+  .endbox .btns,.expbox .btns{grid-column:2;grid-row:1 / span 20;position:sticky;top:0;bottom:auto;align-self:start;margin:0;padding:0;background:none;flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:8px}
+  .endbox .btns .big,.expbox .btns .big{font-size:17px;padding:10px 12px}
+  .endbox .btns .ghost,.expbox .btns .ghost{font-size:14px;padding:8px 10px}
+  .endbox h2,.expbox h2{font-size:24px}
+  .expbox img{max-height:calc(100vh - 110px)}
+}
+/* Regras: o botão Entendi fica sempre à vista, sem precisar rolar até o fim */
+#rules .btns{position:sticky;bottom:-24px;margin:0 -24px -24px;padding:10px 24px 16px;background:linear-gradient(#fbf5e600,var(--paper) 14px)}
 .box ol#rank.many{gap:4px}
 .box ol#rank.many li.r{padding:5px 10px}
 .voids{font-size:13px;font-weight:700;color:#7a6250}
