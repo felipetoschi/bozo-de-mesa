@@ -31,5 +31,6 @@
 
     <!-- Permissions -->
 
-    <!-- O jogo roda todo no aparelho e não usa internet, então o app não pede essa permissão -->
+    <!-- O jogo roda todo no aparelho; a internet só é usada para conferir se saiu versão nova do app (GitHub) -->
+    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>
