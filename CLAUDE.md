@@ -25,7 +25,8 @@ O app não carrega o `@capacitor/core` no JS: para falar com o Android use `wind
 
 - Até 3 lançamentos; guardar dados; marcar exige tocar na casa **e** apertar Marcar.
 - **Pedir baixo**: só a partir do 2º lançamento, vale para o próximo lançamento; os dados que caem valem a face de baixo (7 − valor); dados guardados não viram; dá para cancelar antes de lançar.
-- De boca (1º lançamento): Full 15, Seguida 25, Quadrada 35; normal: 10/20/30; General 40; **General de boca encerra e vence na hora**. General também vale como Quadrada.
+- **De boca** = os 5 dados lançados juntos, sem guardar nenhum (no 1º lançamento ou no 2º/3º): Full 15, Seguida 25, Quadrada 35; normal: 10/20/30; General 40; **General de boca (em qualquer lançamento) encerra e vence na hora**. General também vale como Quadrada.
+- General (qualquer um, também no marcador) solta fogos de artifício simples na tela.
 - **Casa anulada**: quando **todos** marcam a mesma casa com os **mesmos pontos** (ex.: todos Quadrada 30), ela é riscada e não soma. Pontos diferentes (35 de boca × 30) **não** anulam; risco (0) nunca anula.
 - **Modo jogo: sem desfazer** — errou a marcação, é erro do jogador. **Modo marcador: pode corrigir/apagar.**
 - Ao sair Full/Seguida/Quadrada/General: brilho discreto + chance exata daquele lançamento.
