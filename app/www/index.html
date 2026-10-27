@@ -104,9 +104,6 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 @keyframes land{0%{transform:translateY(-14px) rotate(12deg)}70%{transform:translateY(2px)}100%{transform:none}}
 #baixo{border:2px solid var(--gold);background:#0004;color:var(--gold);border-radius:12px;padding:6px 12px;font-weight:900;font-size:14px;min-height:36px}
 #baixo:disabled{opacity:.35;cursor:default}
-#forceGen{border:1px dashed #fff8;background:none;color:#fffc;border-radius:10px;padding:3px 8px;font-weight:700;font-size:12px;min-height:28px}
-#forceGen.used{background:#fff3;color:#fff;border-style:solid}
-#forceGen:disabled{opacity:.35;cursor:default}
 #baixo.used{background:var(--gold);color:var(--ink)}
 .die.flip{animation:flip .45s ease-in-out}
 @keyframes flip{0%{transform:rotateX(0)}50%{transform:rotateX(90deg) translateY(-10px)}100%{transform:rotateX(0)}}
@@ -369,7 +366,6 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
           <button id="roll" aria-label="Lançar os dados"><span class="cup">Lançar</span></button>
           <span id="rollsLeft">3 lançamentos</span>
           <button id="baixo" disabled aria-pressed="false" title="A partir do segundo lançamento: no próximo lançamento vale a face de baixo">Pedir baixo</button>
-          <button id="forceGen" title="Só para testar: o próximo lançamento sai General (normal, não de boca)">Forçar general</button>
         </div>
         <div class="side">
           <div class="dice" id="dice"></div>
@@ -413,7 +409,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
       <li>Ás a Sena: soma dos dados daquele número.</li>
       <li>Casa anulada: se todos os jogadores marcarem a mesma casa com os mesmos pontos (por exemplo, todos fizeram Quadrada 30), ela fica riscada e não conta na soma de ninguém.</li>
       <li>Full (3 + 2 iguais) 10, Seguida (1 a 5 ou 2 a 6) 20, Quadrada (4 iguais) 30, General (5 iguais) 40.</li>
-      <li>De boca (os 5 dados lançados juntos, sem guardar nenhum — no primeiro lançamento ou nos outros): Full 15, Seguida 25, Quadrada 35. General de boca acaba o jogo e ganha na hora.</li>
+      <li>De boca (os 5 dados lançados juntos, sem guardar nenhum — no primeiro lançamento ou nos outros): Full 15, Seguida 25, Quadrada 35. General de boca acaba o jogo e ganha na hora, em qualquer rodada e em qualquer lançamento.</li>
       <li>Na tela inicial, troque qualquer jogador para 🤖 Computador, ou toque em "Jogar contra o computador".</li>
       <li>Quando todas as cartelas estiverem cheias, ganha quem tiver mais pontos.</li>
       <li>Só marcador: para jogar com copo e dados de verdade, de 2 a 8 jogadores. Toque numa casa de qualquer cartela e escolha os pontos; toque de novo para corrigir. Com mais de 4 jogadores (ou no celular), toque no nome no ranking para ver a cartela de cada um.</li>
@@ -665,8 +661,7 @@ function render(){
   $('roll').disabled=busy||left<=0||bot;
   /* Pedir baixo: só a partir do segundo lançamento, e vale para o próximo */
   const bx=$('baixo');bx.disabled=busy||bot||G.over||G.rolls===0||left<=0;
-  bx.classList.toggle('used',!!G.baixo);
-  const fg=$('forceGen');fg.disabled=busy||bot||G.over||left<=0;fg.classList.toggle('used',!!G.forceGen);fg.textContent=G.forceGen?'✓ General forçado':'Forçar general';bx.setAttribute('aria-pressed',!!G.baixo);bx.textContent=G.baixo?'✓ Baixo pedido':'Pedir baixo';
+  bx.classList.toggle('used',!!G.baixo);bx.setAttribute('aria-pressed',!!G.baixo);bx.textContent=G.baixo?'✓ Baixo pedido':'Pedir baixo';
   $('rollsLeft').textContent=left===0?'Sem lançamentos':`${left} lançamento${left>1?'s':''}`;
   renderDice();renderSeats();orientCenter();
   const h=$('hint');
@@ -727,10 +722,8 @@ async function doRoll(){
   clearInterval(rt);$('roll').classList.remove('shake');
   if(G!==g)return;
   G.dice=G.dice.map((v,i)=>G.held[i]?v:1+Math.floor(Math.random()*6));
-  const held=[...G.held],fell=G.held.map(x=>!x),force=!!G.forceGen,baixo=G.rolls>0&&G.baixo&&!force;
-  /* Teste: General forçado sai com o valor de um dado guardado (ou qualquer um) e conta como General normal, não de boca */
-  if(force){const v=G.dice.find((_,i)=>held[i])||1+Math.floor(Math.random()*6);G.dice=G.dice.map(()=>v)}
-  G.rolls++;G.boca=!force&&held.every(x=>!x);G.baixo=false;G.forceGen=false;landSound();
+  const held=[...G.held],fell=G.held.map(x=>!x),baixo=G.rolls>0&&G.baixo;
+  G.rolls++;G.boca=held.every(x=>!x);G.baixo=false;landSound();
   if(baixo){
     /* Os dados caem e então são virados: vale a face de baixo (as faces opostas somam 7) */
     renderDice();$('dice').querySelectorAll('.die').forEach((d,i)=>{if(fell[i])d.classList.add('land')});
@@ -750,10 +743,6 @@ async function doRoll(){
   save();
 }
 $('roll').onclick=()=>{if(!isBot())doRoll()};
-$('forceGen').onclick=()=>{
-  if(busy||isBot()||G.over||G.rolls>=3)return;
-  G.forceGen=!G.forceGen;tone(G.forceGen?880:520,.08,'triangle',.1);save();render();
-};
 $('baixo').onclick=()=>{
   if(busy||isBot()||G.over||G.rolls===0||G.rolls>=3)return;
   G.baixo=!G.baixo;tone(G.baixo?380:520,.08,'triangle',.1);$('hint').classList.remove('flash');save();render();
@@ -763,7 +752,7 @@ async function doMark(){
   G.players[G.cur].sc[G.sel]=points(G.sel,G.dice,deBoca());
   markSound();$('hint').classList.remove('flash');checkVoid(G.sel);
   if(G.players.every(x=>Object.keys(x.sc).length===NCATS)){G.over=true;G.sel=null;G.rolls=0;save();render();await wait(500);showEnd(null);return}
-  G.cur=nextPlayer(G.cur);G.held=[0,0,0,0,0];G.rolls=0;G.boca=false;G.forceGen=false;G.sel=null;G.baixo=false;viewing=null;
+  G.cur=nextPlayer(G.cur);G.held=[0,0,0,0,0];G.rolls=0;G.boca=false;G.sel=null;G.baixo=false;viewing=null;
   save();render();maybeBot();
 }
 $('mark').onclick=()=>{if(!isBot())doMark()};
