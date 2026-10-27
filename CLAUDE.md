@@ -61,4 +61,8 @@ O projeto começou num branch do repositório de perfil `felipetoschi/felipetosc
 - Teste no navegador com Playwright (Chromium em `/opt/pw-browsers/chromium`): várias telas (celular e tablet, em pé e deitado), 2–8 jogadores, modo jogo e marcador; conferir que nada se sobrepõe nem rola.
 - Depois de enviar, conferir a compilação em Actions (o APK sai em Artifacts).
 - Versão "arquivo único" e site: `python3 site/montar-site.py` gera tudo em `dist/` (ignorado pelo git); o GitHub Pages publica sozinho.
+- **Fluxo combinado com o dono:** mudança pronta e testada → commit e push no branch → abrir PR → fazer o merge (ele pediu para já deixar pronto para o app) → o push no main publica sozinho o site e a versão nova do app em Releases → conferir que a compilação deu certo e dizer ao dono o número da versão (ex.: 1.0.27) e o link https://github.com/felipetoschi/bozo-de-mesa/releases/latest. Se o PR anterior já foi juntado, recomeçar o branch a partir do main.
+- Quem já tem o app instala a versão nova por cima pelo link (o placar não se perde, mesma chave); o próprio app avisa na tela inicial quando sai versão nova (a partir da 1.0.27, que tem a permissão de internet). Quem instalou o APK de teste (Artifacts) precisa desinstalar antes.
+- Mudança em regra do jogo: perguntar ao dono quando houver mais de um jeito de entender (ex.: "de boca" foi confirmado como "5 dados lançados juntos").
+- Conhecido e não corrigido: no celular deitado bem pequeno (568×320) a coluna do copo ("lançamentos"/"Pedir baixo") fica um pouco cortada na borda; a tela inicial rola um pouco no celular com muitos nomes.
 - Sempre explicar ao dono o que mudou em linguagem simples.
