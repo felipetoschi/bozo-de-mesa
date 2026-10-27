@@ -189,7 +189,9 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 /* ---------- Celular ---------- */
 body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-inset-right,0px)) max(4px,env(safe-area-inset-bottom,0px)) max(4px,env(safe-area-inset-left,0px))}
 .phone .mesa{padding:12px;border-radius:20px;box-shadow:inset 0 0 0 6px var(--wood2),inset 0 0 0 8px #0004,inset 0 0 40px #0008}
-.phone #setup{min-height:calc(100dvh - 32px);gap:14px;padding-block:8px}
+.phone #setup{min-height:calc(100dvh - 48px);gap:14px;padding-block:8px}
+/* Celular baixo: tela inicial mais junta, para o Começar aparecer sem rolar (ou rolando pouco) */
+@media (max-height:700px){.phone #setup{gap:9px;padding-block:2px}.phone #setup h1{font-size:30px;margin:0}.phone .modes button{padding:6px 12px}.phone .count button{width:50px;height:50px}}
 .phone .count button{width:56px;height:56px;font-size:24px}
 .phone #game.duoOn #hint:not(.flash){display:none}
 .phone .duo button{padding:2px 6px;gap:2px}
@@ -367,6 +369,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
   .phone #game.scorer .center{align-self:center}
 }
 .phone .live .pts{font-size:21px}
+.phone #mark{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .phone .clear{min-height:32px;padding:4px 12px;font-size:13px}
 @media (max-height:700px){.phone #game.scorer .who small{display:none}}
 @media (prefers-reduced-motion:reduce){.die.tumble,.die.land,.die.flip,#roll.shake .cup,.dice.combo .die svg,#hint .odds,.toast.show{animation:none}}
