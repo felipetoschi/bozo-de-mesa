@@ -104,6 +104,9 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 @keyframes land{0%{transform:translateY(-14px) rotate(12deg)}70%{transform:translateY(2px)}100%{transform:none}}
 #baixo{border:2px solid var(--gold);background:#0004;color:var(--gold);border-radius:12px;padding:6px 12px;font-weight:900;font-size:14px;min-height:36px}
 #baixo:disabled{opacity:.35;cursor:default}
+#forceGen{border:1px dashed #fff8;background:none;color:#fffc;border-radius:10px;padding:3px 8px;font-weight:700;font-size:12px;min-height:28px}
+#forceGen.used{background:#fff3;color:#fff;border-style:solid}
+#forceGen:disabled{opacity:.35;cursor:default}
 #baixo.used{background:var(--gold);color:var(--ink)}
 .die.flip{animation:flip .45s ease-in-out}
 @keyframes flip{0%{transform:rotateX(0)}50%{transform:rotateX(90deg) translateY(-10px)}100%{transform:rotateX(0)}}
@@ -246,7 +249,12 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
 @keyframes glow{0%{filter:none}35%{filter:drop-shadow(0 0 7px #f0b93a) drop-shadow(0 0 2px #f0b93a)}100%{filter:none}}
 
 /* ---------- Aviso rápido ---------- */
-.fogos{position:fixed;inset:0;width:100%;height:100%;z-index:50;pointer-events:none}
+.fogos{position:fixed;inset:0;z-index:50;pointer-events:none;overflow:hidden}
+.fogos .burst{position:absolute;width:0;height:0}
+.fogos .burst i{position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;animation:fogo 1.5s cubic-bezier(.15,.7,.3,1) forwards}
+@keyframes fogo{0%{transform:translate(0,0) scale(1.3);opacity:1}70%{opacity:1}100%{transform:translate(var(--dx),calc(var(--dy) + 40px)) scale(.4);opacity:0}}
+.fogosTxt{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font-family:"Alfa Slab One",serif;font-size:clamp(40px,12vw,90px);line-height:1;color:var(--gold);text-shadow:0 0 18px #f0b93a,0 4px 0 #0008;animation:fogoTxt 3.4s ease-out forwards;white-space:nowrap}
+@keyframes fogoTxt{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}20%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0}}
 .toast{position:fixed;left:50%;top:50%;z-index:40;transform:translate(-50%,-50%);max-width:min(90vw,420px);box-sizing:border-box;padding:12px 18px;border-radius:14px;background:var(--ink);color:var(--gold);font-weight:900;font-size:17px;text-align:center;box-shadow:0 10px 30px #000a;pointer-events:none}
 .toast.show{animation:toast 3.2s ease forwards}
 @keyframes toast{0%{opacity:0;transform:translate(-50%,-40%)}8%,85%{opacity:1;transform:translate(-50%,-50%)}100%{opacity:0;transform:translate(-50%,-50%)}}
@@ -361,6 +369,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
           <button id="roll" aria-label="Lançar os dados"><span class="cup">Lançar</span></button>
           <span id="rollsLeft">3 lançamentos</span>
           <button id="baixo" disabled aria-pressed="false" title="A partir do segundo lançamento: no próximo lançamento vale a face de baixo">Pedir baixo</button>
+          <button id="forceGen" title="Só para testar: o próximo lançamento sai General (normal, não de boca)">Forçar general</button>
         </div>
         <div class="side">
           <div class="dice" id="dice"></div>
@@ -485,28 +494,21 @@ const rattle=()=>noise(.06,.5,1500+Math.random()*2500);
 const landSound=()=>{for(let i=0;i<5;i++)noise(.04,.6,3000+Math.random()*1500,i*.045)};
 const markSound=()=>{tone(660,.12,'triangle',.15);tone(990,.18,'triangle',.12,.08)};
 const flipSound=()=>{noise(.08,.5,2200);tone(380,.1,'triangle',.1,.05)};
-/* Fogos de artifício simples quando sai General (não bloqueia toques) */
+/* Fogos de artifício quando sai General: faíscas em HTML/CSS por cima de tudo (não bloqueia toques) */
 function fireworks(){
-  const cv=document.createElement('canvas'),x=cv.getContext('2d'),W=innerWidth,H=innerHeight,dpr=Math.min(devicePixelRatio||1,2);
-  cv.className='fogos';cv.width=W*dpr;cv.height=H*dpr;x.scale(dpr,dpr);document.body.appendChild(cv);
-  const cols=['#ffd54a','#ff6b6b','#6bd3ff','#9dff7a','#ff9df0','#ffffff'],parts=[],rockets=[],n=reduce?2:5;
-  for(let k=0;k<n;k++)rockets.push({t:k*380,x:W*(.2+Math.random()*.6),y:H,ty:H*(.15+Math.random()*.3),c:cols[k%cols.length],up:true});
-  const t0=performance.now();let last=t0;
-  const step=now=>{
-    const dt=Math.min(now-last,40)/16.7;last=now;
-    x.clearRect(0,0,W,H);
-    for(const r of rockets){
-      if(!r.up||now-t0<r.t)continue;
-      r.y-=H*.018*dt;x.fillStyle=r.c;x.beginPath();x.arc(r.x,r.y,2.5,0,7);x.fill();
-      if(r.y<=r.ty){r.up=false;tone(180+Math.random()*80,.15,'triangle',.05);
-        for(let i=0;i<40;i++){const a=i/40*Math.PI*2,v=2+Math.random()*2.5;parts.push({x:r.x,y:r.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,c:r.c})}}
-    }
-    for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=.05*dt;p.vx*=.98;p.l-=.012*dt;
-      if(p.l>0){x.globalAlpha=p.l;x.fillStyle=p.c;x.beginPath();x.arc(p.x,p.y,3,0,7);x.fill()}}
-    x.globalAlpha=1;
-    if(rockets.some(r=>r.up)||parts.some(p=>p.l>0))requestAnimationFrame(step);else cv.remove();
-  };
-  requestAnimationFrame(step);
+  document.querySelectorAll('.fogos').forEach(e=>e.remove());
+  const box=document.createElement('div');box.className='fogos';box.setAttribute('aria-hidden','true');
+  box.innerHTML='<div class="fogosTxt">GENERAL!</div>';document.body.appendChild(box);
+  const cols=['#ffd54a','#ff6b6b','#6bd3ff','#9dff7a','#ff9df0','#ffffff'],W=innerWidth,H=innerHeight,n=7;
+  for(let k=0;k<n;k++)setTimeout(()=>{
+    if(!box.isConnected)return;
+    const x=W*(.15+Math.random()*.7),y=H*(.15+Math.random()*.4),c=cols[k%cols.length],R=Math.min(W,H)*(.18+Math.random()*.1);
+    const b=document.createElement('div');b.className='burst';b.style.left=x+'px';b.style.top=y+'px';
+    let h='';for(let i=0;i<28;i++){const a=i/28*Math.PI*2,d=R*(.75+Math.random()*.35);
+      h+=`<i style="background:${c};box-shadow:0 0 6px ${c};--dx:${(Math.cos(a)*d).toFixed(1)}px;--dy:${(Math.sin(a)*d).toFixed(1)}px"></i>`}
+    b.innerHTML=h;box.appendChild(b);tone(160+Math.random()*90,.18,'triangle',.07);
+  },k*420);
+  setTimeout(()=>box.remove(),n*420+1800);
 }
 const fanfare=()=>[523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,.22,'triangle',.18,i*.12));
 /* Botões da barra: ícone + texto (no celular aparece só o ícone, menos quando pede confirmação) */
@@ -663,7 +665,8 @@ function render(){
   $('roll').disabled=busy||left<=0||bot;
   /* Pedir baixo: só a partir do segundo lançamento, e vale para o próximo */
   const bx=$('baixo');bx.disabled=busy||bot||G.over||G.rolls===0||left<=0;
-  bx.classList.toggle('used',!!G.baixo);bx.setAttribute('aria-pressed',!!G.baixo);bx.textContent=G.baixo?'✓ Baixo pedido':'Pedir baixo';
+  bx.classList.toggle('used',!!G.baixo);
+  const fg=$('forceGen');fg.disabled=busy||bot||G.over||left<=0;fg.classList.toggle('used',!!G.forceGen);fg.textContent=G.forceGen?'✓ General forçado':'Forçar general';bx.setAttribute('aria-pressed',!!G.baixo);bx.textContent=G.baixo?'✓ Baixo pedido':'Pedir baixo';
   $('rollsLeft').textContent=left===0?'Sem lançamentos':`${left} lançamento${left>1?'s':''}`;
   renderDice();renderSeats();orientCenter();
   const h=$('hint');
@@ -724,8 +727,10 @@ async function doRoll(){
   clearInterval(rt);$('roll').classList.remove('shake');
   if(G!==g)return;
   G.dice=G.dice.map((v,i)=>G.held[i]?v:1+Math.floor(Math.random()*6));
-  const held=[...G.held],fell=G.held.map(x=>!x),baixo=G.rolls>0&&G.baixo;
-  G.rolls++;G.boca=held.every(x=>!x);G.baixo=false;landSound();
+  const held=[...G.held],fell=G.held.map(x=>!x),force=!!G.forceGen,baixo=G.rolls>0&&G.baixo&&!force;
+  /* Teste: General forçado sai com o valor de um dado guardado (ou qualquer um) e conta como General normal, não de boca */
+  if(force){const v=G.dice.find((_,i)=>held[i])||1+Math.floor(Math.random()*6);G.dice=G.dice.map(()=>v)}
+  G.rolls++;G.boca=!force&&held.every(x=>!x);G.baixo=false;G.forceGen=false;landSound();
   if(baixo){
     /* Os dados caem e então são virados: vale a face de baixo (as faces opostas somam 7) */
     renderDice();$('dice').querySelectorAll('.die').forEach((d,i)=>{if(fell[i])d.classList.add('land')});
@@ -745,6 +750,10 @@ async function doRoll(){
   save();
 }
 $('roll').onclick=()=>{if(!isBot())doRoll()};
+$('forceGen').onclick=()=>{
+  if(busy||isBot()||G.over||G.rolls>=3)return;
+  G.forceGen=!G.forceGen;tone(G.forceGen?880:520,.08,'triangle',.1);save();render();
+};
 $('baixo').onclick=()=>{
   if(busy||isBot()||G.over||G.rolls===0||G.rolls>=3)return;
   G.baixo=!G.baixo;tone(G.baixo?380:520,.08,'triangle',.1);$('hint').classList.remove('flash');save();render();
@@ -754,7 +763,7 @@ async function doMark(){
   G.players[G.cur].sc[G.sel]=points(G.sel,G.dice,deBoca());
   markSound();$('hint').classList.remove('flash');checkVoid(G.sel);
   if(G.players.every(x=>Object.keys(x.sc).length===NCATS)){G.over=true;G.sel=null;G.rolls=0;save();render();await wait(500);showEnd(null);return}
-  G.cur=nextPlayer(G.cur);G.held=[0,0,0,0,0];G.rolls=0;G.boca=false;G.sel=null;G.baixo=false;viewing=null;
+  G.cur=nextPlayer(G.cur);G.held=[0,0,0,0,0];G.rolls=0;G.boca=false;G.forceGen=false;G.sel=null;G.baixo=false;viewing=null;
   save();render();maybeBot();
 }
 $('mark').onclick=()=>{if(!isBot())doMark()};
