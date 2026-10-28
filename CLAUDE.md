@@ -10,6 +10,8 @@ O dono do projeto fala português; responda em português, de forma simples (ele
 |---|---|
 | **O jogo inteiro (único arquivo que se edita)** | `app/www/index.html` |
 | Fontes locais (funciona sem internet) | `app/www/fonts/` |
+| Sons gravados de dados (feltro e batidas; licença MIT do pacote `@3d-dice/dice-box-threejs`, ver `LEIAME.txt`) | `app/www/sons/` — o site embute no arquivo único |
+| Vibração (plugin nativo `Vibrar`, permissão VIBRATE) | `.../VibrarPlugin.java`; no JS `vibrar(ms)` ou `vibrar([vibra,pausa,...])` |
 | Projeto Android (Capacitor 8, API 36) | `app/android/` — a cópia do jogo dentro dele é gerada, não editar |
 | Plugin nativo de compartilhar (imagem/texto direto no WhatsApp) | `app/android/app/src/main/java/com/felipetoschi/bozodemesa/CompartilharPlugin.java` |
 | Botão voltar, tela sempre acesa | `.../MainActivity.java` (chama `window.bozoVoltar()` do jogo) |
@@ -51,6 +53,7 @@ O app não carrega o `@capacitor/core` no JS: para falar com o Android use `wind
 - Exportar: imagem do resultado (WhatsApp direto no app), texto, planilha .csv (navegador). Lembrete de exportar antes de zerar.
 - Versão visível na tela inicial e nas Regras: `const VERSAO='__VERSAO__'` é trocado na compilação — app: "Versão 1.0.N · atualizada em dd/mm/aaaa hh:mm" (N = número da compilação, igual ao de Releases); site: "Versão online · atualizada em ...". A data/hora é a do último commit (horário de Brasília), então app e site atualizados mostram a mesma.
 - Cartela minimalista "papel e caneta" (linhas riscadas à mão, letra Caveat).
+- **Sons gravados e vibração**: copo chacoalhando = batidas de dados (`toc`); dados caindo = feltro com quiques (`landSound`); guardar dado = toc; os sons de interface (marcar, fanfarra) continuam sintetizados. Sem os arquivos (ex.: abrindo por file://) volta aos sons sintetizados. Vibra ao chacoalhar, ao cair, ao guardar dado, ao marcar e no General (só jogadas de pessoas). Botão "📳 Vibração" na abertura liga/desliga (`bozo-vibra`).
 
 ## Situação da versão 1.0
 

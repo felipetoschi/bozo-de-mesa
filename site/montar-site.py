@@ -1,6 +1,6 @@
 """Monta o site do jogo (GitHub Pages) na pasta dist/:
 - index.html: o jogo, com ícone e manifesto para "Adicionar à tela inicial";
-- bozo-de-mesa.html: o jogo num arquivo só, com as fontes embutidas (para mandar a amigos);
+- bozo-de-mesa.html: o jogo num arquivo só, com as fontes e os sons embutidos (para mandar a amigos);
 - privacidade.html: a política de privacidade exigida pela Play Store.
 Uso: python3 site/montar-site.py
 """
@@ -42,6 +42,14 @@ for fonte in sorted((www / "fonts").glob("*.woff2")):
     assert unico.count(ref) == 1, ref
     dados = base64.b64encode(fonte.read_bytes()).decode()
     unico = unico.replace(ref, f"url(data:font/woff2;base64,{dados})")
+# ...e cada som de dado (pasta sons/), levando junto o aviso da licença deles
+for som in sorted((www / "sons").glob("*.mp3")):
+    ref = f"'sons/{som.name}'"
+    assert unico.count(ref) == 1, ref
+    dados = base64.b64encode(som.read_bytes()).decode()
+    unico = unico.replace(ref, f"'data:audio/mpeg;base64,{dados}'")
+aviso = (www / "sons" / "LEIAME.txt").read_text(encoding="utf-8").replace("--", "- -")
+unico = unico.replace("</body>", f"<!--\n{aviso}-->\n</body>", 1)
 (dist / "bozo-de-mesa.html").write_text(unico, encoding="utf-8")
 
 print("Site montado em", dist)

@@ -534,7 +534,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
       <button class="go" data-flow="amigos"><span class="ic">👥</span><span><b>Jogar com amigos</b><small>2 a 4 pessoas ou em duplas, no mesmo aparelho</small></span></button>
       <button class="go" data-flow="marcador"><span class="ic">📝</span><span><b>Só marcador</b><small>dados de verdade, o app marca os pontos</small></span></button>
     </div>
-    <div class="menuFoot"><button id="menuRules">📖 Regras</button><button id="menuSound"></button></div>
+    <div class="menuFoot"><button id="menuRules">📖 Regras</button><button id="menuSound"></button><button id="menuVib"></button></div>
     <small class="ver"></small>
     <button class="upd" hidden></button>
   </section>
@@ -688,13 +688,36 @@ const isBot=()=>!!(G&&!isScorer()&&G.players[G.cur].bot);
 
 /* ---------- Som ---------- */
 let ac=null;
-function audio(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(ac&&ac.state==='suspended')ac.resume();return ac}
+function audio(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();loadSounds()}catch(e){}}if(ac&&ac.state==='suspended')ac.resume();return ac}
+/* Sons gravados de dados (pasta sons/, licença MIT: ver sons/LEIAME.txt). Enquanto não carregam, ou se não der, ficam os sons feitos pelo próprio app */
+const SOM_ARQ={feltro:['sons/feltro1.mp3','sons/feltro2.mp3','sons/feltro3.mp3','sons/feltro4.mp3','sons/feltro5.mp3'],toc:['sons/toc1.mp3','sons/toc2.mp3','sons/toc3.mp3','sons/toc4.mp3','sons/toc5.mp3','sons/toc6.mp3']};
+const SOM={feltro:[],toc:[]};
+function loadSounds(){for(const [k,l] of Object.entries(SOM_ARQ))l.forEach(u=>fetch(u).then(r=>r.arrayBuffer()).then(b=>new Promise((ok,no)=>ac.decodeAudioData(b,ok,no))).then(buf=>SOM[k].push(buf)).catch(()=>{}))}
+/* Toca um dos sons gravados daquele tipo, sorteado, com volume e tom um pouco diferentes a cada vez; diz se tocou */
+function sample(kind,vol=1,delay=0){
+  if(muted)return true;const a=audio(),l=SOM[kind];if(!a||!l.length)return false;
+  const s=a.createBufferSource(),g=a.createGain();s.buffer=l[Math.floor(Math.random()*l.length)];s.playbackRate.value=.9+Math.random()*.25;
+  g.gain.value=vol;s.connect(g).connect(a.destination);s.start(a.currentTime+delay);return true;
+}
+/* Vibração: no app pelo Android; no navegador, quando ele deixa. Número = uma vibrada; lista = [vibra, pausa, vibra, ...] */
+let vibra=true;
+function vibrar(v){
+  if(!vibra)return;
+  try{if(inApp)window.Capacitor.nativePromise('Vibrar','vibrar',Array.isArray(v)?{padrao:v}:{ms:v}).catch(()=>{});else if(navigator.vibrate)navigator.vibrate(v)}catch(e){}
+}
 function tone(f,dur,type='sine',vol=.15,delay=0){if(muted)return;const a=audio();if(!a)return;const t=a.currentTime+delay,o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.connect(g).connect(a.destination);o.start(t);o.stop(t+dur+.02)}
 function noise(dur,vol,freq,delay=0){if(muted)return;const a=audio();if(!a)return;const len=Math.floor(a.sampleRate*dur),b=a.createBuffer(1,len,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*(1-i/len);const s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();f.type='bandpass';f.frequency.value=freq;f.Q.value=2;g.gain.value=vol;s.buffer=b;s.connect(f).connect(g).connect(a.destination);s.start(a.currentTime+delay)}
-const rattle=()=>noise(.06,.5,1500+Math.random()*2500);
-const landSound=()=>{for(let i=0;i<5;i++)noise(.04,.6,3000+Math.random()*1500,i*.045)};
+/* Copo chacoalhando: os dados batem uns nos outros lá dentro */
+const rattle=()=>{if(sample('toc',.25+Math.random()*.35)){if(Math.random()<.5)sample('toc',.15+Math.random()*.25,.03+Math.random()*.03)}else noise(.06,.5,1500+Math.random()*2500)};
+/* Dados caindo no feltro: cada um bate num instante, com um ou outro quique e batida entre eles */
+const landSound=(n=5)=>{
+  if(!SOM.feltro.length){for(let i=0;i<n;i++)noise(.04,.6,3000+Math.random()*1500,i*.045);return}
+  for(let i=0;i<n;i++){const t=i*.05+Math.random()*.03;sample('feltro',.75+Math.random()*.25,t);if(Math.random()<.5)sample('feltro',.25,t+.09+Math.random()*.05);if(Math.random()<.4)sample('toc',.2,t+.02)}
+};
+/* Tocar num dado para guardar ou soltar */
+const holdSound=on=>{if(!sample('toc',on?.6:.35))tone(on?700:450,.06,'triangle',.1)};
 const markSound=()=>{tone(660,.12,'triangle',.15);tone(990,.18,'triangle',.12,.08)};
-const flipSound=()=>{noise(.08,.5,2200);tone(380,.1,'triangle',.1,.05)};
+const flipSound=()=>{if(!sample('feltro',.8)){noise(.08,.5,2200);tone(380,.1,'triangle',.1,.05)}else{sample('toc',.35,.04);sample('feltro',.4,.08)}};
 /* Fogos de artifício quando sai General: faíscas em HTML/CSS por cima de tudo (não bloqueia toques); o "GENERAL!" fica virado para quem fez */
 function fireworks(who){
   document.querySelectorAll('.fogos').forEach(e=>e.remove());
@@ -716,6 +739,8 @@ const fanfare=()=>[523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,.22,'tr
 function setBtn(id,ic,tx,ask){const b=$(id);b.innerHTML=`<span class="ic">${ic}</span><span class="tx">${tx}</span>`;b.classList.toggle('ask',!!ask)}
 function setSoundLabel(){setBtn('sound',muted?'🔇':'🔊','Som');$('menuSound').textContent=muted?'🔇 Som desligado':'🔊 Som'}
 $('sound').onclick=$('menuSound').onclick=()=>{muted=!muted;setSoundLabel();try{localStorage.setItem('bozo-mute',muted?'1':'0')}catch(e){}};
+const setVibLabel=()=>{$('menuVib').textContent=vibra?'📳 Vibração':'📴 Sem vibração'};
+$('menuVib').onclick=()=>{vibra=!vibra;setVibLabel();vibrar(40);try{localStorage.setItem('bozo-vibra',vibra?'1':'0')}catch(e){}};
 
 /* ---------- Pontuação ---------- */
 function points(cat,dice,deBoca){
@@ -755,8 +780,8 @@ function renderArt(spill){
 }
 $('art').onclick=async()=>{
   const a=$('art');if(a.classList.contains('shake'))return;
-  audio();a.classList.add('shake');const rt=setInterval(rattle,70);await wait(reduce?150:550);clearInterval(rt);a.classList.remove('shake');
-  const v=renderArt(true);landSound();if(v.every(x=>x===v[0])){fanfare();fireworks(null)}
+  audio();a.classList.add('shake');vibrar([25,45,25,45,25,45,25,45]);const rt=setInterval(rattle,70);await wait(reduce?150:550);clearInterval(rt);a.classList.remove('shake');
+  const v=renderArt(true);landSound();vibrar([45,40,25]);if(v.every(x=>x===v[0])){fanfare();vibrar([90,60,90,60,250]);fireworks(null)}
 };
 /* Abertura e jogadores: se não couber na tela (celular baixinho), tudo encolhe um pouco em vez de rolar */
 function fitScreen(sec){
@@ -864,7 +889,7 @@ function renderDice(){
   $('dice').innerHTML=G.dice.map((v,i)=>`<button class="die ${G.rolls===0?'idle':''} ${G.held[i]?'held':''}" data-i="${i}" aria-label="Dado ${v}${G.held[i]?', guardado':''}" aria-pressed="${!!G.held[i]}">${dieSVG(v)}</button>`).join('');
   $('dice').querySelectorAll('.die').forEach(d=>d.onclick=()=>{
     if(busy||isBot()||G.rolls===0||G.rolls>=3)return;
-    const i=+d.dataset.i;G.held[i]=G.held[i]?0:1;tone(G.held[i]?700:450,.06,'triangle',.1);save();render();
+    const i=+d.dataset.i;G.held[i]=G.held[i]?0:1;holdSound(G.held[i]);vibrar(12);save();render();
   });
 }
 /* Linhas da cartela riscadas à mão: cada traço sai um pouco torto, mas igual a cada desenho do mesmo jogador */
@@ -1069,6 +1094,7 @@ async function doRoll(){
   if(G.rolls===0)G.held=[0,0,0,0,0];
   render();
   $('roll').classList.add('shake');
+  const human=!isBot();if(human)vibrar(reduce?[30]:[25,45,25,45,25,45,25,45,25,45,25,45,25]);
   const rt=setInterval(rattle,70),t0=Date.now(),dur=reduce?250:800;
   while(Date.now()-t0<dur&&G===g){
     G.dice=G.dice.map((v,i)=>G.held[i]?v:1+Math.floor(Math.random()*6));
@@ -1079,14 +1105,14 @@ async function doRoll(){
   if(G!==g)return;
   G.dice=G.dice.map((v,i)=>G.held[i]?v:1+Math.floor(Math.random()*6));
   const held=[...G.held],fell=G.held.map(x=>!x),baixo=G.rolls>0&&G.baixo;
-  G.rolls++;G.boca=held.every(x=>!x);G.baixo=false;if(G.duo&&G.half===1)G.pick=1;landSound();
+  G.rolls++;G.boca=held.every(x=>!x);G.baixo=false;if(G.duo&&G.half===1)G.pick=1;landSound(fell.filter(Boolean).length);if(human)vibrar([45,40,25]);
   if(baixo){
     /* Os dados caem e então são virados: vale a face de baixo (as faces opostas somam 7) */
     renderDice();$('dice').querySelectorAll('.die').forEach((d,i)=>{if(fell[i])d.classList.add('land')});
     $('hint').textContent='Baixo! Virando os dados...';
     await wait(reduce?200:650);
     if(G!==g)return;
-    G.dice=G.dice.map((v,i)=>fell[i]?7-v:v);flipSound();
+    G.dice=G.dice.map((v,i)=>fell[i]?7-v:v);flipSound();if(human)vibrar(30);
   }
   busy=false;
   const c=[0,0,0,0,0,0,0];G.dice.forEach(v=>c[v]++);
@@ -1094,8 +1120,8 @@ async function doRoll(){
   if(!call&&baixo){$('hint').textContent='Baixo! Vale a face de baixo.';$('hint').classList.add('flash')}
   render();
   $('dice').querySelectorAll('.die').forEach((d,i)=>{if(fell[i])d.classList.add(baixo?'flip':'land')});
-  if(deBoca()&&c.includes(5)){G.over=true;G.bocaBy=G.cur;save();fanfare();fireworks(G.cur);await wait(1000);showEnd(G.cur);return}
-  if(call==='General!'){fanfare();fireworks(G.cur)}
+  if(deBoca()&&c.includes(5)){G.over=true;G.bocaBy=G.cur;save();fanfare();vibrar([90,60,90,60,250]);fireworks(G.cur);await wait(1000);showEnd(G.cur);return}
+  if(call==='General!'){fanfare();vibrar([90,60,90,60,250]);fireworks(G.cur)}
   save();
 }
 $('roll').onclick=()=>{if(!isBot())doRoll()};
@@ -1107,7 +1133,7 @@ async function doMark(){
   if(G.duo&&G.half===0)return saveHalf();
   if(!G.sel||busy||!(G.rolls>0||usingSaved()))return;
   G.players[G.cur].sc[G.sel]=points(G.sel,jDice(),jBoca());G.half=0;G.saved=null;G.pick=1;
-  markSound();$('hint').classList.remove('flash');checkVoid(G.sel);
+  markSound();if(!isBot())vibrar(20);$('hint').classList.remove('flash');checkVoid(G.sel);
   if(G.players.every(x=>Object.keys(x.sc).length===NCATS)){G.over=true;G.sel=null;G.rolls=0;save();render();await wait(500);showEnd(null);return}
   G.cur=nextPlayer(G.cur);G.held=[0,0,0,0,0];G.rolls=0;G.boca=false;G.sel=null;G.baixo=false;viewing=null;
   save();render();maybeBot();
@@ -1157,11 +1183,11 @@ document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('pick')
 async function setScore(i,cat,v){
   closePick();const p=G.players[i];
   if(v==='del'){delete p.sc[cat];tone(400,.08,'triangle',.1);save();render();return}
-  if(v==='boca'){p.sc.gen=40;G.over=true;G.bocaBy=i;save();render();fanfare();fireworks(i);await wait(900);showEnd(i);return}
+  if(v==='boca'){p.sc.gen=40;G.over=true;G.bocaBy=i;save();render();fanfare();vibrar([90,60,90,60,250]);fireworks(i);await wait(900);showEnd(i);return}
   /* Casa nova marcada: a vez passa sozinha para o próximo (corrigir ou apagar não muda a vez) */
   const nova=p.sc[cat]===undefined;
-  p.sc[cat]=+v;if(nova){G.cur=nextOpen(i);viewing=null}markSound();checkVoid(cat);save();render();
-  if(cat==='gen'&&+v===40)fireworks(i);
+  p.sc[cat]=+v;if(nova){G.cur=nextOpen(i);viewing=null}markSound();vibrar(20);checkVoid(cat);save();render();
+  if(cat==='gen'&&+v===40){vibrar([90,60,90,60,250]);fireworks(i)}
   if(G.players.every(x=>Object.keys(x.sc).length===NCATS)){G.over=true;save();await wait(600);showEnd(null)}
 }
 /* Finalizar a partida a qualquer momento (às vezes o jogo já está ganho) */
@@ -1457,7 +1483,8 @@ window.bozoVoltar=()=>{
 };
 
 /* ---------- Início ---------- */
-try{muted=localStorage.getItem('bozo-mute')==='1'}catch(e){}
+try{muted=localStorage.getItem('bozo-mute')==='1';vibra=localStorage.getItem('bozo-vibra')!=='0'}catch(e){}
+setVibLabel();
 setSoundLabel();setBtn('newgame','🏠','Novo jogo');setBtn('reset','↺','Zerar tudo');
 const saved=load();
 /* Reabrir o app volta exatamente onde parou: tela inicial, partida em andamento ou resumo do fim */
