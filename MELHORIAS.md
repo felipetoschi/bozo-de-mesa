@@ -4,7 +4,7 @@ Lista combinada para deixar o jogo com cara de app profissional (análise de 28/
 Marque `[x]` quando ficar pronto. A ordem é a sugerida (mais importante primeiro).
 
 ## Já feito
-- [x] Lápis riscando o papel ao marcar, atualização obrigatória, botão "Voltar ao início" no fim, feltro felpudo e copo de couro — versão 1.0.45 (a confirmar)
+- [x] Lápis riscando o papel ao marcar, atualização obrigatória, botão "Voltar ao início" no fim, feltro felpudo e copo de couro — versão 1.0.45
 - [x] Sons gravados de dados (copo chacoalhando, dados caindo no feltro) — versão 1.0.43
 - [x] Vibração (chacoalhar, dados caindo, guardar dado, marcar, General) e botão para desligar — versão 1.0.43
 - [x] Só marcador: a vez passa sozinha e a lista fica na ordem da jogada — versão 1.0.41
