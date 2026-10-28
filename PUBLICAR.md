@@ -64,7 +64,7 @@ Já está publicada junto com o link do jogo (depois do passo 0): https://felipe
    - ícone: `loja/icone-512.png`;
    - recurso gráfico: `loja/destaque-1024x500.png`;
    - capturas de celular: `loja/capturas/celular-*.png`;
-   - capturas de tablet de 7": `loja/capturas/tablet-7-1.png`;
+   - capturas de tablet de 7": `loja/capturas/tablet-7-*.png`;
    - capturas de tablet de 10": `loja/capturas/tablet-10-*.png`.
 3. **Conteúdo do app** (menu "Política"), com estas respostas:
    - Política de privacidade: o link do passo 4.
@@ -74,6 +74,12 @@ Já está publicada junto com o link do jogo (depois do passo 0): https://felipe
    - Público-alvo: **13 anos ou mais**. Marcar idades menores coloca o app nas regras de apps para crianças, que exigem mais coisas.
    - Segurança dos dados: o app **não coleta nem compartilha** dados.
    - App governamental, financeiro, de saúde etc.: **não**.
+
+### O app da Play Store e o APK do GitHub
+
+- O `.aab` (o arquivo da Play Store) é compilado **sem o aviso de versão nova do GitHub**: na loja, quem atualiza o app é a própria Play Store. Isso também segue a regra da Google, que não deixa um app da loja mandar baixar outro APK.
+- O APK do link de Releases continua igual para os amigos, com o aviso de versão nova.
+- A Play Store assina o app com uma chave dela, diferente da chave do APK do GitHub. Por isso, quem já tem o app instalado pelo link e quiser passar para o da loja precisa **desinstalar antes** (o placar salvo se perde) e depois instalar pela Play Store.
 
 ## Passo 6 — Teste fechado (obrigatório para contas pessoais novas)
 
@@ -93,7 +99,7 @@ Em **Produção → Criar nova versão**, envie o `.aab` mais recente e mande pa
 ## Para lançar uma atualização
 
 1. Altere o jogo em `app/www/index.html` e envie para o GitHub. O **link do jogo** se atualiza sozinho.
-2. Para os amigos com o APK: **Actions → App Android → Run workflow** com "Publicar" marcado. Eles baixam do mesmo link e instalam por cima.
-3. Para a Play Store: pegue o novo `.aab` (versão maior, automático) em Artifacts e envie como nova versão no Play Console.
+2. Para os amigos com o APK: quando a mudança entra no main, a versão nova aparece sozinha em Releases e o app avisa. Eles baixam do mesmo link e instalam por cima.
+3. Para a Play Store: em **Actions → App Android**, abra a compilação do main, baixe o `bozo-de-mesa-play-store-N` em Artifacts e envie o `.aab` como nova versão no Play Console (o número da versão sobe sozinho).
 
 > As regras da Play Store mudam com frequência (teste com 12 pessoas, versão mínima do Android etc.). Se algo no Play Console estiver diferente do que está escrito aqui, siga o que o Play Console pedir.
