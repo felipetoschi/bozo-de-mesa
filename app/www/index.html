@@ -66,6 +66,12 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 .count button{width:60px;height:60px;border-radius:16px;border:2px solid var(--line);background:#0003;color:var(--paper);font-family:var(--display);font-size:26px}
 .count button.duoBtn{width:auto;padding:0 16px;font-size:20px}
 .count button[aria-pressed="true"]{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+.botOpts{display:flex;flex-direction:column;align-items:center;gap:8px}
+.botOpts[hidden]{display:none}
+.count.lvls button{width:auto;height:46px;padding:0 16px;font-size:18px}
+.phone .count.lvls button{width:auto;height:42px;padding:0 12px;font-size:16px}
+.fast{border:2px solid var(--line);background:#0003;color:var(--muted);border-radius:12px;padding:6px 14px;font-weight:900;font-size:15px;min-height:38px}
+.fast[aria-pressed="true"]{border-color:var(--gold);color:var(--gold);background:#f0b93a22}
 .dRow{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
 .dRow[hidden]{display:none}
 .dRow .count button{width:46px;height:46px;font-size:20px;border-radius:13px}
@@ -108,7 +114,7 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 .seat.cur{box-shadow:0 0 0 4px var(--gold),0 0 28px #f0b93a99}
 .seathead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px;padding:0 4px}
 .seathead b{font-family:var(--hand);font-weight:700;color:var(--pen);font-size:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-.seathead .wins{font-style:normal;font-weight:800;font-size:15px;color:#9b8c78;padding:2px 9px;margin-left:auto;font-variant-numeric:tabular-nums;white-space:nowrap}
+.seathead .wins{font-style:normal;font-weight:800;font-size:15px;color:#6f604c;padding:2px 9px;margin-left:auto;font-variant-numeric:tabular-nums;white-space:nowrap}
 .seathead span{font-family:var(--hand);font-weight:700;font-size:22px;color:var(--pen);border-bottom:2px solid var(--pen);border-radius:0 0 40% 60%/0 0 6px 4px;padding:0 4px;line-height:1}
 .seat.cur .seathead b::before{content:"🎲 "}
 /* Cartela do bozó: folha de papel, só as linhas de dentro, riscadas à mão com caneta */
@@ -116,7 +122,7 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 .sheet .lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
 .sheet .lines path{fill:none;stroke:var(--pen);stroke-width:2.2;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:.85}
 .cell{border:none;min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3px 2px;line-height:1;background:none;font:inherit;color:inherit}
-.cell small{font-size:10px;font-weight:700;color:#9b8c78;text-transform:uppercase;letter-spacing:.6px}
+.cell small{font-size:10px;font-weight:700;color:#6f604c;text-transform:uppercase;letter-spacing:.6px}
 .cell b{font-family:var(--hand);font-size:19px;font-weight:700;color:var(--pen);min-height:20px;position:relative}
 .cell.prev{cursor:pointer}
 .cell.prev b{color:var(--pencil);font-weight:500}
@@ -166,6 +172,8 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 #hint{min-height:22px;margin:0;text-align:center;font-weight:700;max-width:40ch}
 #hint.flash{color:var(--gold);font-family:var(--display);font-weight:400;font-size:24px}
 #mark{font-size:18px;padding:12px 22px}
+/* Cortar pede um segundo toque: o botão fica vermelho */
+#mark.ask{background:var(--red);color:#fff;box-shadow:0 5px 0 #7a1520}
 .tools{grid-area:tools;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 .tools button{border:1px solid var(--line);background:#0003;color:var(--muted);border-radius:10px;padding:8px 12px;font-weight:800;min-height:40px}
 
@@ -212,9 +220,9 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 /* As cartelas encolhem com a tela, mas nunca perdem a orientação de cada lado */
 .seathead b{font-size:calc(var(--cw) * .09)}
 .seathead span{font-size:calc(var(--cw) * .1)}
-.cell small{font-size:calc(var(--cw) * .032);line-height:1;white-space:nowrap;margin-top:.5em}
+.cell small{font-size:calc(var(--cw) * .045);line-height:1;white-space:nowrap;margin-top:.5em}
 /* A letra de mão desenha os números baixos dentro da linha; sobe um pouco para ficarem no meio do espaço */
-.cell b{font-size:calc(var(--cw) * .08);line-height:1;min-height:0;transform:translateY(-.12em)}
+.cell b{font-size:calc(var(--cw) * .095);line-height:1;min-height:0;transform:translateY(-.12em)}
 /* Barra de ferramentas: ícone + texto */
 .tools button{display:inline-flex;align-items:center;gap:5px}
 .chips,.board{display:none}
@@ -280,8 +288,8 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
   .phone #menu .logo{grid-area:logo}.phone #menu .art{grid-area:art;justify-self:center;width:min(100%,230px)}.phone #menu .menuFoot{grid-area:foot}.phone #menu .menuBtns{grid-area:btns;gap:8px}
   .phone #menu .ver,.phone #menu .upd{grid-column:1}
   .phone #menu h1{font-size:30px;white-space:nowrap}.phone .tag{font-size:19px}.phone .go{padding:8px 14px}.phone .go .ic{font-size:24px}
-  .phone #setup{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);grid-template-areas:"head table" "ask table" "count table" "drow table" "tip table" "start table";align-content:safe center;column-gap:20px;row-gap:8px;justify-items:center}
-  .phone .setHead{grid-area:head}.phone #countAsk{grid-area:ask}.phone #count{grid-area:count}.phone #duoRow{grid-area:drow}.phone #setTip{grid-area:tip}.phone #start{grid-area:start}
+  .phone #setup{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);grid-template-areas:"head table" "ask table" "count table" "drow table" "bopts table" "tip table" "start table";align-content:safe center;column-gap:20px;row-gap:8px;justify-items:center}
+  .phone .setHead{grid-area:head}.phone #countAsk{grid-area:ask}.phone #count{grid-area:count}.phone #duoRow{grid-area:drow}.phone #botOpts{grid-area:bopts;gap:5px}.phone .count.lvls button{height:36px;font-size:14px;padding:0 9px}.phone .fast{min-height:32px;padding:3px 10px;font-size:13px}.phone #setTip{grid-area:tip}.phone #start{grid-area:start}
   .phone .tableSet{grid-area:table;gap:6px}
   @media (max-height:340px){.phone .felt small{display:none}.phone .felt{aspect-ratio:2.6}}
   .phone .felt{aspect-ratio:2.2}
@@ -347,7 +355,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
 .phone .seathead b{font-size:19px}
 .phone .seathead span{font-size:20px}
 .phone .sheet{grid-template-rows:repeat(4,1fr);height:calc(100% - 26px)}
-.phone .cell small{font-size:9px}
+.phone .cell small{font-size:10.5px}
 .phone .cell b{font-size:19px}
 .phone .tools{gap:6px;flex-wrap:nowrap}
 .phone .tools button{padding:4px 10px;min-height:38px;min-width:42px;justify-content:center;font-size:15px}
@@ -551,6 +559,11 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
     <div class="count" id="count" role="group" aria-labelledby="countAsk"></div>
     <div class="dRow" id="duoRow" hidden><p id="duoAsk">Quantas duplas?</p><div class="count" id="duoCount" role="group" aria-label="Número de duplas"></div></div>
     <div class="tableSet" id="names"></div>
+    <div class="botOpts" id="botOpts" hidden>
+      <p>Nível do computador</p>
+      <div class="count lvls" id="lvls" role="group" aria-label="Nível do computador"><button data-l="facil">Fácil</button><button data-l="medio">Médio</button><button data-l="dificil">Difícil</button></div>
+      <button class="fast" id="fastBtn" aria-pressed="false">⚡ Bot rápido</button>
+    </div>
     <p class="setTip" id="setTip"></p>
     <button class="big" id="start">Começar</button>
   </section>
@@ -607,13 +620,13 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
     <h2>Regras</h2>
     <ul>
       <li>Cada jogador tem até 3 lançamentos por vez. Toque nos dados que quer guardar; os outros rolam de novo.</li>
-      <li>Depois, toque numa casa vazia da sua cartela e aperte Marcar. Se nada servir, você corta uma casa (vale zero).</li>
+      <li>Depois, toque numa casa vazia da sua cartela e aperte Marcar. Se nada servir, você corta uma casa (vale zero): o botão fica vermelho e pede um segundo toque, para ninguém cortar sem querer.</li>
       <li>Pedir baixo: a partir do segundo lançamento, antes de lançar, você pode pedir baixo. Os dados que caírem valem a face de baixo (1↔6, 2↔5, 3↔4). Os dados guardados não viram. Dá para cancelar antes de lançar.</li>
       <li>Ás a Sena: soma dos dados daquele número.</li>
       <li>Casa anulada: se todos os jogadores marcarem a mesma casa com os mesmos pontos (por exemplo, todos fizeram Quadrada 30), ela fica riscada e não conta na soma de ninguém.</li>
       <li>Full (3 + 2 iguais) 10, Seguida (1 a 5 ou 2 a 6) 20, Quadrada (4 iguais) 30, General (5 iguais) 40.</li>
       <li>De boca (os 5 dados lançados juntos, sem guardar nenhum — no primeiro lançamento ou nos outros): Full 15, Seguida 25, Quadrada 35. General de boca acaba o jogo e ganha na hora, em qualquer rodada e em qualquer lançamento.</li>
-      <li>Na abertura, toque em "Jogar contra o computador" para jogar contra 1 a 3 bots. Em "Jogar com amigos", dá para trocar qualquer lugar por um bot.</li>
+      <li>Na abertura, toque em "Jogar contra o computador" para jogar contra 1 a 3 bots. Em "Jogar com amigos", dá para trocar qualquer lugar por um bot. Na tela de jogadores, escolha o nível do computador (fácil, médio ou difícil) e, se quiser, o "Bot rápido", que joga sem demorar.</li>
       <li>Quando todas as cartelas estiverem cheias, ganha quem tiver mais pontos.</li>
       <li>Dupla: de 2 a 4 duplas (toque em Dupla e escolha quantas), cada uma com uma cartela. Na vez da dupla, o primeiro joga (até 3 lançamentos) e aperta "Guardar jogo"; depois o parceiro joga. No fim aparecem os dois jogos: escolha um deles, toque na casa e aperte Marcar. General de boca de qualquer um dos dois ganha na hora.</li>
       <li>Só marcador: para jogar com copo e dados de verdade, de 2 a 8 jogadores. Na vez de cada um, toque numa casa da cartela dele e escolha os pontos; a vez passa sozinha para o próximo. Toque numa casa já marcada para corrigir (não muda a vez). Com mais de 4 jogadores (ou no celular), toque num nome da lista para ver outra cartela.</li>
@@ -695,7 +708,7 @@ const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 /* Versão e data/hora da atualização: o texto é colocado na compilação do app e do site (Actions) */
 const VERSAO='__VERSAO__';
 document.querySelectorAll('.ver').forEach(e=>e.textContent=VERSAO.startsWith('Vers')?VERSAO:'Versão de teste (sem número)');
-let G=null,duoMode=false,nDuos=2,nPlayers=2,nBots=1,flow='bot',busy=false,muted=false,draftNames=[],draftBots=[],gameMode='jogo';
+let G=null,duoMode=false,nDuos=2,nPlayers=2,nBots=1,flow='bot',botLevel='medio',botFast=false,busy=false,muted=false,draftNames=[],draftBots=[],gameMode='jogo';
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
 /* Só marcador: o jogo é com copo e dados de verdade e o app só marca os pontos */
 const isScorer=()=>!!(G&&G.mode==='marcador');
@@ -877,6 +890,10 @@ function renderSetup(){
   $('duoRow').hidden=!duoMode;
   $('duoCount').innerHTML=duoMode?[2,3,4].map(n=>`<button data-n="${n}" aria-pressed="${n===nDuos}" aria-label="${n} duplas">${n}</button>`).join(''):'';
   $('duoCount').querySelectorAll('button').forEach(b=>b.onclick=()=>{keepNames();nDuos=+b.dataset.n;tone(600,.05,'triangle',.1);renderSetup()});
+  /* Nível do computador (e bot rápido): aparece quando tem bot na mesa */
+  $('botOpts').hidden=!(gameMode==='jogo'&&!duoMode&&(flow==='bot'||draftBots.slice(0,nPlayers).some(Boolean)));
+  $('lvls').querySelectorAll('button').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.l===botLevel);b.onclick=()=>{keepNames();botLevel=b.dataset.l;saveBotPrefs();tone(600,.05,'triangle',.1);renderSetup()}});
+  $('fastBtn').setAttribute('aria-pressed',botFast);
   $('setTip').textContent=flow==='bot'?'Você fica embaixo e joga primeiro; os bots jogam sozinhos.'
     :flow==='marcador'?'Joguem com copo e dados de verdade; o app só marca os pontos.'
     :duoMode?'Cada plaquinha é uma dupla: na vez dela, os dois jogam e escolhem qual jogo marcar.'
@@ -893,6 +910,8 @@ function renderSetup(){
   $('names').querySelectorAll('.kind').forEach(b=>b.onclick=()=>{keepNames();const i=+b.dataset.i;draftBots[i]=!draftBots[i];tone(draftBots[i]?500:700,.05,'triangle',.1);renderSetup()});
   fitScreen($('setup'));
 }
+$('fastBtn').onclick=()=>{keepNames();botFast=!botFast;saveBotPrefs();tone(botFast?700:500,.05,'triangle',.1);renderSetup()};
+function saveBotPrefs(){try{localStorage.setItem('bozo-bot',JSON.stringify({l:botLevel,f:botFast}))}catch(e){}}
 function keepNames(){draftNames=Array.from({length:8},(_,i)=>{const el=$('nome'+i);return el?el.value:(draftNames[i]||'')})}
 $('start').onclick=()=>{
   keepNames();audio();
@@ -910,7 +929,7 @@ function newGame(specs,keep,mode=gameMode){
   if(mode==='jogo')specs=specs.slice(0,4);
   const duo=mode==='jogo'&&!!specs[0].duo;
   G={players:specs.map(s=>({name:s.name,bot:mode==='jogo'&&!!s.bot&&!duo,sc:{},...(duo?{duo:s.duo}:{})})),cur:0,duo,half:0,saved:null,pick:1,dice:[1,2,3,4,5],held:[0,0,0,0,0],rolls:0,sel:null,baixo:false,over:false,
-     mode,wins:keep?keep.wins:specs.map(()=>0),games:keep?keep.games:0,hist:keep?keep.hist:[]};
+     mode,wins:keep?keep.wins:specs.map(()=>0),games:keep?keep.games:0,hist:keep?keep.hist:[],botLevel,botFast};
   busy=false;viewing=null;$('hint').classList.remove('flash');$('pick').hidden=true;showScreen('game');setMode(true);
   save();$('end').hidden=true;render();maybeBot();keepAwake();
 }
@@ -1006,7 +1025,7 @@ function renderSeats(){
     const side=pos==='left'||pos==='right';
     ps.style.width=(side?spin.offsetHeight:spin.offsetWidth)+'px';ps.style.height=(side?spin.offsetWidth:spin.offsetHeight)+'px';
   }}
-  document.querySelectorAll('.cell.prev').forEach(c=>c.onclick=()=>{if(isBot())return;G.sel=c.dataset.c;tone(520,.05,'triangle',.08);save();render()});
+  document.querySelectorAll('.cell.prev').forEach(c=>c.onclick=()=>{if(isBot())return;clearCut();G.sel=c.dataset.c;tone(520,.05,'triangle',.08);save();render()});
   document.querySelectorAll('.cell.mk').forEach(c=>c.onclick=()=>openPick(+c.dataset.p,c.dataset.c));
 }
 const ROT={bottom:0,top:180,right:-90,left:90};
@@ -1072,9 +1091,9 @@ function render(){
     else h.textContent='Escolha uma casa na sua cartela.';
   }
   renderDuo();
-  const m=$('mark');
+  const m=$('mark');m.classList.remove('ask');
   if(G.duo&&G.half===0){m.disabled=busy||G.rolls===0;m.textContent=G.rolls?`Guardar jogo e passar para ${p.duo[1]}`:'Lance os dados primeiro'}
-  else if(G.sel&&(G.rolls>0||usingSaved())&&!busy){const pts=points(G.sel,jDice(),jBoca()),of=G.duo?` · ${G.players[G.cur].duo[usingSaved()?0:1]}`:'';m.disabled=bot;m.textContent=pts?`Marcar ${pts} em ${CATS[G.sel].n}${of}`:`Cortar ${CATS[G.sel].n}${of}`}
+  else if(G.sel&&(G.rolls>0||usingSaved())&&!busy){const pts=points(G.sel,jDice(),jBoca()),of=G.duo?` · ${G.players[G.cur].duo[usingSaved()?0:1]}`:'';m.disabled=bot;m.textContent=pts?`Marcar ${pts} em ${CATS[G.sel].n}${of}`:cutT?`Cortar ${CATS[G.sel].n}? Toque de novo`:`Cortar ${CATS[G.sel].n}${of}`;m.classList.toggle('ask',!pts&&!!cutT)}
   else{m.disabled=true;m.textContent=G.rolls||usingSaved()?'Escolha uma casa na cartela':'Lance os dados primeiro'}
 }
 
@@ -1126,13 +1145,14 @@ function announce(held){
 }
 async function doRoll(){
   if(busy||G.over||G.rolls>=3)return;
+  clearCut();
   const g=G;
   audio();busy=true;G.sel=null;$('hint').classList.remove('flash');$('hint').textContent='Chacoalhando...';
   if(G.rolls===0)G.held=[0,0,0,0,0];
   render();
   $('roll').classList.add('shake');
   const human=!isBot();if(human)vibrar(reduce?[30]:[25,45,25,45,25,45,25,45,25,45,25,45,25]);
-  const rt=setInterval(rattle,70),t0=Date.now(),dur=reduce?250:800;
+  const rt=setInterval(rattle,70),t0=Date.now(),dur=reduce?250:isBot()&&G.botFast?350:800;
   while(Date.now()-t0<dur&&G===g){
     G.dice=G.dice.map((v,i)=>G.held[i]?v:1+Math.floor(Math.random()*6));
     renderDice();$('dice').querySelectorAll('.die').forEach((d,i)=>{if(!G.held[i])d.classList.add('tumble')});
@@ -1147,7 +1167,7 @@ async function doRoll(){
     /* Os dados caem e então são virados: vale a face de baixo (as faces opostas somam 7) */
     renderDice();$('dice').querySelectorAll('.die').forEach((d,i)=>{if(fell[i])d.classList.add('land')});
     $('hint').textContent='Baixo! Virando os dados...';
-    await wait(reduce?200:650);
+    await wait(reduce?200:isBot()&&G.botFast?300:650);
     if(G!==g)return;
     G.dice=G.dice.map((v,i)=>fell[i]?7-v:v);flipSound();if(human)vibrar(30);
   }
@@ -1175,7 +1195,15 @@ async function doMark(){
   G.cur=nextPlayer(G.cur);G.held=[0,0,0,0,0];G.rolls=0;G.boca=false;G.sel=null;G.baixo=false;viewing=null;
   save();render();maybeBot();
 }
-$('mark').onclick=()=>{if(!isBot())doMark()};
+/* Cortar (vale zero) pede confirmação: o primeiro toque avisa, o segundo corta (até 3 segundos depois) */
+let cutT=null;
+const clearCut=()=>{if(cutT){clearTimeout(cutT);cutT=null}};
+$('mark').onclick=()=>{
+  if(isBot())return;
+  const cut=!(G.duo&&G.half===0)&&G.sel&&(G.rolls>0||usingSaved())&&!points(G.sel,jDice(),jBoca());
+  if(cut&&!cutT){cutT=setTimeout(()=>{cutT=null;render()},3000);tone(300,.08,'triangle',.1);vibrar(30);render();return}
+  clearCut();doMark();
+};
 
 /* ---------- Só marcador ---------- */
 /* Ranking ao vivo (empate divide a posição) */
@@ -1246,17 +1274,31 @@ $('clearMatch').onclick=()=>{
 /* ---------- Computador ---------- */
 /* Quanto cada casa costuma render: o computador evita gastar uma casa boa com pouco ponto e, se tiver que cortar, corta a que vale menos */
 const EXP={'1':2.1,'2':4.2,'3':6.3,'4':8.4,'5':10.5,'6':12.6,full:6,seq:9,quad:8,gen:5};
+/* Nível do computador:
+   - fácil: guarda os dados do número que mais aparece, às vezes marca sem tentar de novo, e marca o que dá mais ponto na hora (se nada servir, corta qualquer casa);
+   - médio: pensa como o difícil, mas com menos contas e uns enganos;
+   - difícil: testa cada jeito de guardar os dados, simula o próximo lançamento e poupa as casas que valem mais */
 function botPlan(){
-  const p=G.players[G.cur],open=Object.keys(CATS).filter(c=>p.sc[c]===undefined);
-  const best=(d,boca)=>{let bc=null,bv=-1e9;for(const c of open){const v=points(c,d,boca)-EXP[c];if(v>bv){bv=v;bc=c}}return [bv,bc]};
+  const p=G.players[G.cur],open=Object.keys(CATS).filter(c=>p.sc[c]===undefined),lvl=G.botLevel||'dificil';
+  if(lvl==='facil'){
+    const top=()=>{let bc=open[0],bv=-1;for(const c of open){const v=points(c,G.dice,deBoca());if(v>bv){bv=v;bc=c}}return bv>0?bc:open[Math.floor(Math.random()*open.length)]};
+    const k=kindOf(G.dice),kc={General:'gen',Quadrada:'quad',Full:'full',Seguida:'seq'}[k];
+    if(G.rolls>=3||(kc&&open.includes(kc)))return {cat:G.rolls>=3?top():kc};
+    /* afobado: às vezes marca logo o que tem, sem tentar melhorar */
+    if(Math.random()<.4)return {cat:top()};
+    const c=[0,0,0,0,0,0,0];G.dice.forEach(v=>c[v]++);let f=6;for(let v=5;v>=1;v--)if(c[v]>c[f])f=v;
+    return {hold:G.dice.reduce((m,v,i)=>v===f?m|1<<i:m,0)};
+  }
+  const N=lvl==='medio'?40:150,expW=lvl==='medio'?.5:1,erro=lvl==='medio'?7:0;
+  const best=(d,boca)=>{let bc=null,bv=-1e9;for(const c of open){const v=points(c,d,boca)-EXP[c]*expW+(erro?(Math.random()-.5)*erro*.4:0);if(v>bv){bv=v;bc=c}}return [bv,bc]};
   const [nowV,nowC]=best(G.dice,deBoca());
   if(G.rolls>=3)return {cat:nowC};
   /* Testa cada jeito de guardar os dados e simula o próximo lançamento */
   const more=3-G.rolls-1>0?1.5:0;let hold=null,bv=nowV;
   for(let m=0;m<31;m++){
-    let sum=0;const N=150;
+    let sum=0;
     for(let k=0;k<N;k++)sum+=best(G.dice.map((v,i)=>m>>i&1?v:1+Math.floor(Math.random()*6)),m===0)[0];
-    const v=sum/N+more;
+    const v=sum/N+more+(erro?(Math.random()-.5)*erro:0);
     if(v>bv){bv=v;hold=m}
   }
   return hold===null?{cat:nowC}:{hold};
@@ -1264,20 +1306,22 @@ function botPlan(){
 let botRunning=false;
 async function botTurn(){
   botRunning=true;
+  /* Bot rápido: as pausas entre as jogadas dele ficam bem mais curtas */
+  const t=ms=>wait(G.botFast?ms*.35:ms);
   const g=G,me=G.cur,still=()=>G===g&&!G.over&&G.cur===me&&!$('game').hidden;
   try{
-    await wait(900);
+    await t(900);
     while(still()){
-      if(G.rolls===0){await doRoll();await wait(1000);continue}
+      if(G.rolls===0){await doRoll();await t(1000);continue}
       const plan=botPlan();
-      if(plan.cat){G.sel=plan.cat;tone(520,.05,'triangle',.08);render();await wait(1100);if(still())await doMark();break}
+      if(plan.cat){G.sel=plan.cat;tone(520,.05,'triangle',.08);render();await t(1100);if(still())await doMark();break}
       const held=G.dice.map((_,i)=>plan.hold>>i&1);
-      if(held.join()!==G.held.join()){G.held=held;tone(700,.06,'triangle',.1);render();await wait(800)}
+      if(held.join()!==G.held.join()){G.held=held;tone(700,.06,'triangle',.1);render();await t(800)}
       if(!still())break;
       /* De vez em quando o computador também pede baixo */
-      if(Math.random()<.2){G.baixo=true;tone(380,.08,'triangle',.1);render();await wait(700)}
+      if(Math.random()<.2){G.baixo=true;tone(380,.08,'triangle',.1);render();await t(700)}
       if(!still())break;
-      await doRoll();await wait(1000);
+      await doRoll();await t(1000);
     }
   }finally{botRunning=false}
   maybeBot();
@@ -1541,6 +1585,7 @@ window.bozoVoltar=()=>{
 };
 
 /* ---------- Início ---------- */
+try{const b=JSON.parse(localStorage.getItem('bozo-bot')||'{}');if(['facil','medio','dificil'].includes(b.l))botLevel=b.l;botFast=!!b.f}catch(e){}
 try{muted=localStorage.getItem('bozo-mute')==='1';vibra=localStorage.getItem('bozo-vibra')!=='0'}catch(e){}
 setVibLabel();
 setSoundLabel();setBtn('newgame','🏠','Início');setBtn('reset','↺','Zerar tudo');
