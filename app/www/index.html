@@ -174,6 +174,11 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 #mark{font-size:18px;padding:12px 22px}
 /* Cortar pede um segundo toque: o botão fica vermelho */
 #mark.ask{background:var(--red);color:#fff;box-shadow:0 5px 0 #7a1520}
+/* Ao lado do Cortar vermelho aparece o Cancelar (desiste do corte) */
+.markRow{display:flex;gap:8px;justify-content:center;align-items:stretch;max-width:100%;min-width:0}
+.markRow #mark{min-width:0}
+#cutNo{flex:none;border:2px solid var(--paper);background:#0004;color:var(--paper);border-radius:14px;padding:6px 14px;font-weight:900;font-size:16px}
+#cutNo[hidden]{display:none}
 .tools{grid-area:tools;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 .tools button{border:1px solid var(--line);background:#0003;color:var(--muted);border-radius:10px;padding:8px 12px;font-weight:800;min-height:40px}
 
@@ -245,14 +250,14 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 #game.tpanel #baixo{font-size:15px;padding:8px 14px;min-height:42px}
 #game.tpanel #hint{min-height:46px;max-width:360px;display:flex;flex-direction:column;justify-content:center;font-size:15px}
 #game.tpanel #hint.flash{line-height:1.05}
-#game.tpanel #mark{font-size:18px;padding:12px 18px;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#game.tpanel .markRow{width:100%}#game.tpanel #mark{font-size:18px;padding:12px 18px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* Em bloco (mais quadrado): dados, aviso e Marcar | copo, lançamentos e baixo */
 #game.tpanel .spin[data-shape=block] {grid-template-columns:360px auto}
-#game.tpanel .spin[data-shape=block] .dice{grid-area:1/1}#game.tpanel .spin[data-shape=block] #hint{grid-area:2/1}#game.tpanel .spin[data-shape=block] .duo{grid-area:3/1}#game.tpanel .spin[data-shape=block] #mark{grid-area:4/1}
+#game.tpanel .spin[data-shape=block] .dice{grid-area:1/1}#game.tpanel .spin[data-shape=block] #hint{grid-area:2/1}#game.tpanel .spin[data-shape=block] .duo{grid-area:3/1}#game.tpanel .spin[data-shape=block] .markRow{grid-area:4/1}
 #game.tpanel .spin[data-shape=block] #roll{grid-area:1/2/3/3}#game.tpanel .spin[data-shape=block] #rollsLeft{grid-area:3/2}#game.tpanel .spin[data-shape=block] #baixo{grid-area:4/2}
 /* Comprido (mais baixo, quando sobra largura): dados e aviso | Marcar e baixo | copo */
 #game.tpanel .spin[data-shape=long] {grid-template-columns:360px 250px auto}
-#game.tpanel .spin[data-shape=long] .dice{grid-area:1/1}#game.tpanel .spin[data-shape=long] #hint{grid-area:2/1}#game.tpanel .spin[data-shape=long] .duo{grid-area:3/1/4/3}#game.tpanel .spin[data-shape=long] #mark{grid-area:1/2}#game.tpanel .spin[data-shape=long] #baixo{grid-area:2/2}
+#game.tpanel .spin[data-shape=long] .dice{grid-area:1/1}#game.tpanel .spin[data-shape=long] #hint{grid-area:2/1}#game.tpanel .spin[data-shape=long] .duo{grid-area:3/1/4/3}#game.tpanel .spin[data-shape=long] .markRow{grid-area:1/2}#game.tpanel .spin[data-shape=long] #baixo{grid-area:2/2}
 #game.tpanel .spin[data-shape=long] #roll{grid-area:1/3/3/4}#game.tpanel .spin[data-shape=long] #rollsLeft{grid-area:3/3}
 /* Meio da mesa: de quem é a vez e o placar ao vivo, virados para quem joga */
 .meio{display:none}
@@ -393,7 +398,8 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
   .phone #game:not(.scorer) #hint{grid-column:1/3;grid-row:3;font-size:12px;max-width:none}
   .phone #game:not(.scorer) #hint.flash{font-size:18px}
   .phone #game:not(.scorer) #baixo{grid-column:2;grid-row:1}
-  .phone #game:not(.scorer) #mark{grid-column:2;grid-row:2;max-width:190px}
+  .phone #game:not(.scorer) .markRow{grid-column:2;grid-row:2;max-width:190px}
+  .phone #game:not(.scorer) #cutNo{padding:4px 8px;font-size:13px}
   .phone #game:not(.scorer) #roll{grid-column:3;grid-row:1/3}
   .phone #game:not(.scorer) #rollsLeft{grid-column:3;grid-row:3}
   .phone #game:not(.scorer) .die{width:clamp(26px,calc((100vw - 460px) / 5),52px)}
@@ -434,7 +440,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
 @keyframes toast{0%{opacity:0;transform:translate(-50%,-40%)}8%,85%{opacity:1;transform:translate(-50%,-50%)}100%{opacity:0;transform:translate(-50%,-50%)}}
 
 /* ---------- Só marcador ---------- */
-#game.scorer .play,#game.scorer #mark{display:none}
+#game.scorer .play,#game.scorer .markRow{display:none}
 #game:not(.scorer) .live{display:none}
 .live{display:flex;flex-direction:column;align-items:center;gap:10px;width:min(100%,380px)}
 .live ol{list-style:none;margin:0;padding:0;width:100%;display:flex;flex-direction:column;gap:6px}
@@ -449,6 +455,41 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
 .live ol.many .lr{grid-template-columns:24px minmax(0,1fr) auto auto;gap:4px;padding:4px 8px}
 .live ol.many .lr small{font-size:11px}
 .liveBtns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+/* Tablet (2 a 4): cartela grande no meio, virada para quem marca; ao lado (ou embaixo) a lista para escolher quem marcar */
+.mkCard{display:none}
+body:not(.phone) #game.scorer .center{min-height:0}
+.mkCard .seat,.sheetBox .seat{width:var(--cw);height:calc(var(--cw) * .85);box-sizing:border-box;padding:8px;max-width:none}
+.live[data-shape]{width:auto}
+.live[data-shape] .mkCard{display:block}
+/* Tablet pequeno: sem cartela no meio; tocar num nome abre a cartela num quadro */
+.live[data-shape=mini]{gap:6px}
+.live[data-shape=mini] .mkCard{display:none}
+.live[data-shape=mini] ol{display:grid;grid-template-columns:1fr 1fr;gap:5px;width:min(100%,460px)}
+.live[data-shape=mini] .lr{grid-template-columns:24px minmax(0,1fr) auto auto;gap:4px}
+body:not(.phone) #game.scorer .center:has([data-shape=mini]) .who small{display:none}
+body:not(.phone) #game.scorer .center:has([data-shape=mini]) .who{font-size:19px}
+body:not(.phone) #game.scorer .center:has([data-shape=mini]) .spin{gap:4px}
+.live[data-shape=mini] .lr{padding:1px 8px}
+.live[data-shape=mini] .lr small{display:none}
+.live[data-shape=mini] .lr b{font-size:18px;line-height:1.2}
+.live[data-shape=mini] .pts{font-size:20px;line-height:1.2}
+.live[data-shape] .pts{line-height:1.2}
+.live[data-shape=mini] .finish,.live[data-shape=mini] .clear{min-height:30px;padding:2px 12px;font-size:13px}
+.live[data-shape=side]{display:grid;grid-template-columns:auto 290px;grid-template-rows:1fr auto auto auto 1fr;gap:10px 14px;align-items:center}
+.live[data-shape=side] .mkCard{grid-area:1/1/6/2}
+.live[data-shape=side] .who{grid-area:2/2;font-size:22px}
+.live[data-shape=side] .who small{white-space:normal;letter-spacing:.5px;font-size:11px}
+.live[data-shape=side] ol{gap:5px}
+.live[data-shape=side] ol{grid-area:3/2}
+.live[data-shape=side] .liveBtns{grid-area:4/2;flex-wrap:nowrap}
+.live[data-shape=side] .liveBtns button{flex:1 1 0;min-width:0}
+.live[data-shape=stack] ol{display:grid;grid-template-columns:1fr 1fr;gap:5px;width:min(100vw,520px)}
+.live[data-shape=stack] ol .lr,.live[data-shape=mini] ol .lr{grid-template-columns:24px minmax(0,1fr) auto auto;gap:4px;padding:4px 8px}
+.live[data-shape] .lr small{font-size:11px}
+.live[data-shape] .lr{padding:2px 10px}
+.live[data-shape] .lr b{font-size:19px;line-height:1.25}
+.live[data-shape] .finish,.live[data-shape] .clear{min-height:34px;padding:4px 12px}
+.sheetBox{display:flex;justify-content:center;--cw:min(340px,calc(100vw - 80px),calc((100vh - 200px) / .85))}
 .finish{border:2px solid var(--gold);background:#0003;color:var(--gold);border-radius:10px;padding:6px 14px;font-weight:900;min-height:38px}
 .finish.ask{background:var(--gold);color:var(--ink)}
 .finish:disabled{opacity:.4;cursor:default}
@@ -587,9 +628,10 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
           <div class="duo" id="duo" role="group" aria-label="Escolher o jogo da dupla" hidden></div>
         </div>
       </div>
-      <button class="big" id="mark" disabled>Lance os dados primeiro</button>
+      <div class="markRow" id="markRow"><button class="big" id="mark" disabled>Lance os dados primeiro</button><button id="cutNo" hidden>✕ Cancelar</button></div>
       <!-- Só marcador: ranking da partida ao vivo -->
       <div class="live" id="live">
+        <div class="mkCard" id="mkCard"></div>
         <ol id="liveRank"></ol>
         <div class="liveBtns">
           <button class="finish" id="finishMatch">🏁 Finalizar partida</button>
@@ -620,7 +662,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
     <h2>Regras</h2>
     <ul>
       <li>Cada jogador tem até 3 lançamentos por vez. Toque nos dados que quer guardar; os outros rolam de novo.</li>
-      <li>Depois, toque numa casa vazia da sua cartela e aperte Marcar. Se nada servir, você corta uma casa (vale zero): o botão fica vermelho e pede um segundo toque, para ninguém cortar sem querer.</li>
+      <li>Depois, toque numa casa vazia da sua cartela e aperte Marcar. Se nada servir, você corta uma casa (vale zero): o botão fica vermelho e pede confirmação ("✓ Cortar"), com um botão "✕ Cancelar" ao lado para desistir.</li>
       <li>Pedir baixo: a partir do segundo lançamento, antes de lançar, você pode pedir baixo. Os dados que caírem valem a face de baixo (1↔6, 2↔5, 3↔4). Os dados guardados não viram. Dá para cancelar antes de lançar.</li>
       <li>Ás a Sena: soma dos dados daquele número.</li>
       <li>Casa anulada: se todos os jogadores marcarem a mesma casa com os mesmos pontos (por exemplo, todos fizeram Quadrada 30), ela fica riscada e não conta na soma de ninguém.</li>
@@ -629,7 +671,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
       <li>Na abertura, toque em "Jogar contra o computador" para jogar contra 1 a 3 bots. Em "Jogar com amigos", dá para trocar qualquer lugar por um bot. Na tela de jogadores, escolha o nível do computador (fácil, médio ou difícil) e, se quiser, o "Bot rápido", que joga sem demorar.</li>
       <li>Quando todas as cartelas estiverem cheias, ganha quem tiver mais pontos.</li>
       <li>Dupla: de 2 a 4 duplas (toque em Dupla e escolha quantas), cada uma com uma cartela. Na vez da dupla, o primeiro joga (até 3 lançamentos) e aperta "Guardar jogo"; depois o parceiro joga. No fim aparecem os dois jogos: escolha um deles, toque na casa e aperte Marcar. General de boca de qualquer um dos dois ganha na hora.</li>
-      <li>Só marcador: para jogar com copo e dados de verdade, de 2 a 8 jogadores. Na vez de cada um, toque numa casa da cartela dele e escolha os pontos; a vez passa sozinha para o próximo. Toque numa casa já marcada para corrigir (não muda a vez). Com mais de 4 jogadores (ou no celular), toque num nome da lista para ver outra cartela.</li>
+      <li>Só marcador: para jogar com copo e dados de verdade, de 2 a 8 jogadores. Uma pessoa só marca para todos: na vez de cada um, toque numa casa da cartela e escolha os pontos; a vez passa sozinha para o próximo. Toque num nome da lista para abrir a cartela de outro jogador e corrigir (não muda a vez). No tablet com 2 a 4 jogadores, cada cartela fica virada para o seu dono, só para ver, e quem marca usa a cartela grande do meio.</li>
       <li>A partida termina sozinha com General de boca ou quando todas as cartelas estão cheias. No marcador, "Finalizar partida" encerra a qualquer momento e ganha quem tiver mais pontos.</li>
       <li>Fechou o app? Ao abrir de novo, ele volta onde parou: na partida, no resumo ou na tela inicial, com o placar de vitórias.</li>
       <li>📤 Exportar: gera uma imagem com o resultado e o placar de vitórias para mandar no WhatsApp, e também o texto e (no navegador) uma planilha. Bom para guardar antes de zerar.</li>
@@ -956,13 +998,14 @@ function sheetLines(seed){
   return `<svg class="lines" viewBox="0 0 300 200" preserveAspectRatio="none" aria-hidden="true">${
     line(100,4,100,148)+line(200,3,200,197)+line(5,50,296,51)+line(4,100,295,99)+line(206,150,294,151)}</svg>`;
 }
-function seatHTML(p,i){
-  const sc=isScorer(),cur=i===G.cur&&!(sc&&G.over),canPick=cur&&!busy&&(G.duo?G.half===1&&(G.rolls>0||usingSaved()):G.rolls>0);
+function seatHTML(p,i,ro){
+  const sc=isScorer()&&!ro,cur=i===G.cur&&!(sc&&G.over),canPick=cur&&!busy&&(G.duo?G.half===1&&(G.rolls>0||usingSaved()):G.rolls>0);
   const cells=LAYOUT.map((id,k)=>{
     const mid=k%3===2?' mid':'';
     if(!id)return `<div class="cell blank${mid}"></div>`;
     const v=p.sc[id],name=CATS[id].n;
     if(sc)return `<button class="cell mk${mid}${v===0?' zero':''}${v!==undefined&&cancelled(id)?' void':''}" data-p="${i}" data-c="${id}" aria-label="${name} de ${esc(p.name)}: ${v===undefined?'vazia':v===0?'cortada':v+' pontos'}"><small>${name}</small><b>${v===undefined?'':v===0?'X':v}</b></button>`;
+    if(ro&&v===undefined)return `<div class="cell${mid}"><small>${name}</small><b></b></div>`;
     if(v!==undefined)return `<div class="cell${mid}${v===0?' zero':''}${cancelled(id)?' void':''}"${cancelled(id)?` title="Anulada: todos fizeram ${v}"`:''}><small>${name}</small><b>${v===0?'X':v}</b></div>`;
     if(canPick){const pts=points(id,jDice(),jBoca());return `<button class="cell prev${mid}${G.sel===id?' sel':''}" data-c="${id}" aria-label="${name}: ${pts} pontos"><small>${name}</small><b>${pts||'–'}</b></button>`}
     return `<div class="cell${mid}"><small>${name}</small><b></b></div>`;
@@ -1013,7 +1056,7 @@ function renderSeats(){
   if(compact()){renderPhone()}else{
   const map=seatMap();
   ['top','left','right','bottom'].forEach(pos=>{
-    $('area'+pos[0].toUpperCase()+pos.slice(1)).innerHTML=(map[pos]||[]).map(i=>`<div class="slot ${pos}" style="--r:${seatRot(i)}deg">${seatHTML(G.players[i],i)}</div>`).join('');
+    $('area'+pos[0].toUpperCase()+pos.slice(1)).innerHTML=(map[pos]||[]).map(i=>`<div class="slot ${pos}" style="--r:${seatRot(i)}deg">${seatHTML(G.players[i],i,isScorer())}</div>`).join('');
   });
   if(tablePanel()){
     const pos=solo()?'bottom':posOf(G.cur),area=$('area'+pos[0].toUpperCase()+pos.slice(1)),ps=document.createElement('div');
@@ -1081,6 +1124,7 @@ function render(){
   const h=$('hint');
   if(!busy&&!h.classList.contains('flash')){
     if(bot)h.textContent=`${p.name} está pensando...`;
+    else if(cutT&&G.sel)h.textContent=`Cortar ${CATS[G.sel].n} vale zero. Confirma?`;
     else if(G.duo&&G.half===1&&G.rolls===0)h.textContent=`Lance os dados, ou marque já o jogo de ${p.duo[0]}.`;
     else if(G.rolls===0)h.textContent='Toque no copo para lançar.';
     else if(G.duo&&G.half===0)h.textContent=left>0?'Toque nos dados para guardar, ou guarde o jogo para a dupla.':`Guarde o jogo e passe para ${p.duo[1]}.`;
@@ -1091,9 +1135,9 @@ function render(){
     else h.textContent='Escolha uma casa na sua cartela.';
   }
   renderDuo();
-  const m=$('mark');m.classList.remove('ask');
+  const m=$('mark');m.classList.remove('ask');$('cutNo').hidden=!cutT;
   if(G.duo&&G.half===0){m.disabled=busy||G.rolls===0;m.textContent=G.rolls?`Guardar jogo e passar para ${p.duo[1]}`:'Lance os dados primeiro'}
-  else if(G.sel&&(G.rolls>0||usingSaved())&&!busy){const pts=points(G.sel,jDice(),jBoca()),of=G.duo?` · ${G.players[G.cur].duo[usingSaved()?0:1]}`:'';m.disabled=bot;m.textContent=pts?`Marcar ${pts} em ${CATS[G.sel].n}${of}`:cutT?`Cortar ${CATS[G.sel].n}? Toque de novo`:`Cortar ${CATS[G.sel].n}${of}`;m.classList.toggle('ask',!pts&&!!cutT)}
+  else if(G.sel&&(G.rolls>0||usingSaved())&&!busy){const pts=points(G.sel,jDice(),jBoca()),of=G.duo?` · ${G.players[G.cur].duo[usingSaved()?0:1]}`:'';m.disabled=bot;m.textContent=pts?`Marcar ${pts} em ${CATS[G.sel].n}${of}`:cutT?`✓ Cortar`:`Cortar ${CATS[G.sel].n}${of}`;m.classList.toggle('ask',!pts&&!!cutT)}
   else{m.disabled=true;m.textContent=G.rolls||usingSaved()?'Escolha uma casa na cartela':'Lance os dados primeiro'}
 }
 
@@ -1195,15 +1239,16 @@ async function doMark(){
   G.cur=nextPlayer(G.cur);G.held=[0,0,0,0,0];G.rolls=0;G.boca=false;G.sel=null;G.baixo=false;viewing=null;
   save();render();maybeBot();
 }
-/* Cortar (vale zero) pede confirmação: o primeiro toque avisa, o segundo corta (até 3 segundos depois) */
+/* Cortar (vale zero) pede confirmação: o primeiro toque avisa e mostra o Cancelar; "Sim, cortar" corta (sem resposta em 6 s, volta ao normal) */
 let cutT=null;
 const clearCut=()=>{if(cutT){clearTimeout(cutT);cutT=null}};
 $('mark').onclick=()=>{
   if(isBot())return;
   const cut=!(G.duo&&G.half===0)&&G.sel&&(G.rolls>0||usingSaved())&&!points(G.sel,jDice(),jBoca());
-  if(cut&&!cutT){cutT=setTimeout(()=>{cutT=null;render()},3000);tone(300,.08,'triangle',.1);vibrar(30);render();return}
+  if(cut&&!cutT){cutT=setTimeout(()=>{cutT=null;render()},6000);$('hint').classList.remove('flash');tone(300,.08,'triangle',.1);vibrar(30);render();return}
   clearCut();doMark();
 };
+$('cutNo').onclick=()=>{clearCut();tone(520,.05,'triangle',.08);render()};
 
 /* ---------- Só marcador ---------- */
 /* Ranking ao vivo (empate divide a posição) */
@@ -1213,14 +1258,45 @@ function ranking(){
 }
 function renderScorer(){
   const cmp=compact(),show=viewing??G.cur,many=G.players.length>4;
-  $('who').innerHTML=`<small>Partida ${G.games+1} · ${cmp?'toque num nome para ver outra cartela':'toque numa casa para marcar'}</small>Vez de ${esc(G.players[G.cur].name)}`;
-  /* Jogadores na ordem da jogada (sem mostrar quem está na frente); no modo compacto, a lista também escolhe qual cartela aparece embaixo */
+  $('who').innerHTML=`<small>Partida ${G.games+1} · ${cmp?'toque num nome para ver outra cartela':show!==G.cur?`corrigindo ${esc(G.players[show].name)} · toque em ${esc(G.players[G.cur].name)} para voltar`:'uma pessoa marca para todos'}</small>Vez de ${esc(G.players[G.cur].name)}`;
+  /* Jogadores na ordem da jogada (sem mostrar quem está na frente); a lista também escolhe qual cartela se marca */
   $('liveRank').classList.toggle('many',many);
-  $('liveRank').innerHTML=G.players.map((p,i)=>{const tag=cmp?'button':'div',f=Object.keys(p.sc).length;
-    return `<li><${tag} class="lr${i===G.cur?' cur':''}${cmp&&i===show?' on':''}" data-i="${i}"${cmp?` aria-pressed="${i===show}"`:''}><span class="pos">${i===G.cur?'🎲':i+1}</span><b>${esc(p.name)}</b><small>${many?'':`${f}/${NCATS}`}${G.wins[i]?`${many?'':' · '}🏆${many?'':' '}${G.wins[i]}`:''}</small><span class="pts">${total(p)}</span></${tag}></li>`}).join('');
-  $('liveRank').querySelectorAll('button.lr').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;viewing=i===G.cur?null:i;tone(560,.04,'triangle',.08);render()});
+  $('liveRank').innerHTML=G.players.map((p,i)=>{const f=Object.keys(p.sc).length;
+    return `<li><button class="lr${i===G.cur?' cur':''}${i===show?' on':''}" data-i="${i}" aria-pressed="${i===show}"><span class="pos">${i===G.cur?'🎲':i+1}</span><b>${esc(p.name)}</b><small>${many?'':`${f}/${NCATS}`}${G.wins[i]?`${many?'':' · '}🏆${many?'':' '}${G.wins[i]}`:''}</small><span class="pts">${total(p)}</span></button></li>`}).join('');
+  $('liveRank').querySelectorAll('button.lr').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;viewing=i===G.cur?null:i;tone(560,.04,'triangle',.08);render();if(!cmp&&$('live').dataset.shape==='mini')openSheet(i)});
   $('finishMatch').disabled=G.players.every(p=>!Object.keys(p.sc).length);
+  $('mkCard').innerHTML='';
   renderSeats();orientCenter();
+  if(!cmp)fitScorer(show);else delete $('live').dataset.shape;
+}
+/* Tablet com 2 a 4 jogadores: cada cartela fica virada para o seu dono só para ver; quem marca é uma pessoa só,
+   na cartela grande do meio, virada para ela (a da vez, ou a que tocou na lista para corrigir).
+   Se não couber, a lista abre a cartela num quadro */
+function fitScorer(show){
+  const live=$('live'),card=$('mkCard'),who=$('who'),c=$('center'),W=c.clientWidth-12,g=10,
+    H=Math.min(c.clientHeight,$('areaBottom').getBoundingClientRect().top-$('areaTop').getBoundingClientRect().bottom-20)-8;
+  card.innerHTML=seatHTML(G.players[show],show);
+  let best=0,shape='';
+  for(const sh of ['side','stack']){
+    /* Deitado: cartela à esquerda e, à direita, o "Vez de", a lista e os botões; em pé: tudo empilhado */
+    live.dataset.shape=sh;card.style.setProperty('--cw','100px');sh==='side'?live.prepend(who):$('spinWrap').prepend(who);
+    const L=$('liveRank'),B=live.querySelector('.liveBtns'),wh=who.offsetHeight;
+    const cw=sh==='side'?(wh+L.offsetHeight+B.offsetHeight+2*g>H?0:Math.min(H/.85,W-Math.max(L.offsetWidth,B.offsetWidth,who.offsetWidth)-14))
+      :Math.min(W,(H-wh-L.offsetHeight-B.offsetHeight-3*g)/.85);
+    if(cw>best){best=cw;shape=sh}
+  }
+  best=Math.min(Math.floor(best),340);
+  if(best<190){live.dataset.shape='mini';card.innerHTML='';$('spinWrap').prepend(who)}
+  else{live.dataset.shape=shape;shape==='side'?live.prepend(who):$('spinWrap').prepend(who);card.style.setProperty('--cw',best+'px');
+    card.querySelectorAll('.cell.mk').forEach(x=>x.onclick=()=>openPick(+x.dataset.p,x.dataset.c))}
+}
+/* Sem espaço no meio: a cartela de quem foi tocado abre num quadro */
+function openSheet(i){
+  const p=G.players[i];
+  $('pickBox').innerHTML=`<h2 id="pickTitle">Marcar<small>${esc(p.name)}</small></h2><div class="mkCard sheetBox">${seatHTML(p,i)}</div><button class="ghost" id="pickCancel">Fechar</button>`;
+  $('pick').hidden=false;
+  $('pickBox').querySelectorAll('.cell.mk').forEach(x=>x.onclick=()=>openPick(+x.dataset.p,x.dataset.c));
+  $('pickCancel').onclick=closePick;
 }
 /* Escolher os pontos de uma casa: só aparecem valores possíveis no bozó */
 const COMBO={full:[10,15],seq:[20,25],quad:[30,35]};
@@ -1236,8 +1312,6 @@ function openPick(i,cat){
   $('pickBox').innerHTML=`<h2 id="pickTitle">${k.n}<small>${esc(p.name)}</small></h2>
     <div class="opts">${opts.map(o=>`<button class="opt${o.v===v?' on':''}${o.v===0?' x':''}${o.v==='boca'?' boca':''}" data-v="${o.v}"><b>${o.l}</b><small>${o.s}</small></button>`).join('')}</div>
     <button class="ghost" id="pickCancel">Cancelar</button>`;
-  /* Na mesa, o quadro fica virado para quem é dono da cartela */
-  $('pickBox').style.transform=`rotate(${seatRot(i)}deg)`;
   $('pick').hidden=false;tone(520,.05,'triangle',.08);
   $('pickBox').querySelectorAll('.opt').forEach(b=>b.onclick=()=>setScore(i,cat,b.dataset.v));
   $('pickCancel').onclick=closePick;$('pickBox').querySelector('.opt').focus();
