@@ -429,7 +429,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
 .live{display:flex;flex-direction:column;align-items:center;gap:10px;width:min(100%,380px)}
 .live ol{list-style:none;margin:0;padding:0;width:100%;display:flex;flex-direction:column;gap:6px}
 .live .lr{width:100%;box-sizing:border-box;display:grid;grid-template-columns:34px minmax(0,1fr) auto auto;align-items:center;gap:8px;padding:7px 12px;border-radius:12px;background:#0003;border:2px solid var(--line);color:var(--paper);font:inherit;text-align:left}
-.live .lr.lead{border-color:var(--gold);background:#f0b93a22}
+.live .lr.cur{border-color:var(--gold);background:#f0b93a22}
 .live button.lr.on{background:#fbf5e62e;border-color:var(--paper)}
 .live .pos{font-weight:900;color:var(--muted);text-align:center}
 .live .lr b{font-family:var(--hand);font-size:22px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -611,7 +611,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
       <li>Na abertura, toque em "Jogar contra o computador" para jogar contra 1 a 3 bots. Em "Jogar com amigos", dá para trocar qualquer lugar por um bot.</li>
       <li>Quando todas as cartelas estiverem cheias, ganha quem tiver mais pontos.</li>
       <li>Dupla: de 2 a 4 duplas (toque em Dupla e escolha quantas), cada uma com uma cartela. Na vez da dupla, o primeiro joga (até 3 lançamentos) e aperta "Guardar jogo"; depois o parceiro joga. No fim aparecem os dois jogos: escolha um deles, toque na casa e aperte Marcar. General de boca de qualquer um dos dois ganha na hora.</li>
-      <li>Só marcador: para jogar com copo e dados de verdade, de 2 a 8 jogadores. Toque numa casa de qualquer cartela e escolha os pontos; toque de novo para corrigir. Com mais de 4 jogadores (ou no celular), toque no nome no ranking para ver a cartela de cada um.</li>
+      <li>Só marcador: para jogar com copo e dados de verdade, de 2 a 8 jogadores. Na vez de cada um, toque numa casa da cartela dele e escolha os pontos; a vez passa sozinha para o próximo. Toque numa casa já marcada para corrigir (não muda a vez). Com mais de 4 jogadores (ou no celular), toque num nome da lista para ver outra cartela.</li>
       <li>A partida termina sozinha com General de boca ou quando todas as cartelas estão cheias. No marcador, "Finalizar partida" encerra a qualquer momento e ganha quem tiver mais pontos.</li>
       <li>Fechou o app? Ao abrir de novo, ele volta onde parou: na partida, no resumo ou na tela inicial, com o placar de vitórias.</li>
       <li>📤 Exportar: gera uma imagem com o resultado e o placar de vitórias para mandar no WhatsApp, e também o texto e (no navegador) uma planilha. Bom para guardar antes de zerar.</li>
@@ -876,7 +876,7 @@ function sheetLines(seed){
     line(100,4,100,148)+line(200,3,200,197)+line(5,50,296,51)+line(4,100,295,99)+line(206,150,294,151)}</svg>`;
 }
 function seatHTML(p,i){
-  const sc=isScorer(),cur=!sc&&i===G.cur,canPick=cur&&!busy&&(G.duo?G.half===1&&(G.rolls>0||usingSaved()):G.rolls>0);
+  const sc=isScorer(),cur=i===G.cur&&!(sc&&G.over),canPick=cur&&!busy&&(G.duo?G.half===1&&(G.rolls>0||usingSaved()):G.rolls>0);
   const cells=LAYOUT.map((id,k)=>{
     const mid=k%3===2?' mid':'';
     if(!id)return `<div class="cell blank${mid}"></div>`;
@@ -900,7 +900,9 @@ const solo=()=>!!G&&!isScorer()&&G.players.filter(p=>!p.bot).length<=1;
 const seatMap=()=>seatsOf(G.players.length,isScorer()?null:G.players.map(p=>!!p.bot));
 const posOf=i=>{const m=seatMap();return Object.keys(m).find(k=>m[k].includes(i))||'bottom'};
 const ORDER={2:[0,1],3:[0,1,2],4:[0,1,2,3]};
-const nextPlayer=c=>{const o=ORDER[G.players.length];return o[(o.indexOf(c)+1)%o.length]};
+const nextPlayer=c=>{const o=ORDER[G.players.length]||G.players.map((_,i)=>i);return o[(o.indexOf(c)+1)%o.length]};
+/* Só marcador: a vez passa para o próximo que ainda tem casa vazia */
+const nextOpen=c=>{let n=c;for(let k=0;k<G.players.length;k++){n=nextPlayer(n);if(Object.keys(G.players[n].sc).length<NCATS)return n}return c};
 /* Celular: a mesa não cabe em volta, então o aparelho passa de mão em mão.
    Em cima o placar de todos; embaixo a cartela de quem joga (toque num nome para ver a cartela dele) */
 const phoneMQ=matchMedia('(max-width: 699px), (max-height: 499px)');
@@ -1119,13 +1121,13 @@ function ranking(){
   r.forEach((x,k)=>x.pos=k&&x.t===r[k-1].t?r[k-1].pos:k+1);return r;
 }
 function renderScorer(){
-  const cmp=compact(),show=viewing??0,many=G.players.length>4;
-  $('who').innerHTML=`<small>Partida ${G.games+1} · ${cmp?'toque num nome para ver a cartela':'toque numa casa para marcar'}</small>Placar ao vivo`;
-  /* No modo compacto, o ranking também escolhe qual cartela aparece embaixo */
+  const cmp=compact(),show=viewing??G.cur,many=G.players.length>4;
+  $('who').innerHTML=`<small>Partida ${G.games+1} · ${cmp?'toque num nome para ver outra cartela':'toque numa casa para marcar'}</small>Vez de ${esc(G.players[G.cur].name)}`;
+  /* Jogadores na ordem da jogada (sem mostrar quem está na frente); no modo compacto, a lista também escolhe qual cartela aparece embaixo */
   $('liveRank').classList.toggle('many',many);
-  $('liveRank').innerHTML=ranking().map(x=>{const p=G.players[x.i],tag=cmp?'button':'div';
-    return `<li><${tag} class="lr${x.pos===1&&x.t>0?' lead':''}${cmp&&x.i===show?' on':''}" data-i="${x.i}"${cmp?` aria-pressed="${x.i===show}"`:''}><span class="pos">${x.pos===1&&x.t>0?'👑':x.pos+'º'}</span><b>${esc(p.name)}</b><small>${many?'':`${x.f}/${NCATS}`}${G.wins[x.i]?`${many?'':' · '}🏆${many?'':' '}${G.wins[x.i]}`:''}</small><span class="pts">${x.t}</span></${tag}></li>`}).join('');
-  $('liveRank').querySelectorAll('button.lr').forEach(b=>b.onclick=()=>{viewing=+b.dataset.i;tone(560,.04,'triangle',.08);render()});
+  $('liveRank').innerHTML=G.players.map((p,i)=>{const tag=cmp?'button':'div',f=Object.keys(p.sc).length;
+    return `<li><${tag} class="lr${i===G.cur?' cur':''}${cmp&&i===show?' on':''}" data-i="${i}"${cmp?` aria-pressed="${i===show}"`:''}><span class="pos">${i===G.cur?'🎲':i+1}</span><b>${esc(p.name)}</b><small>${many?'':`${f}/${NCATS}`}${G.wins[i]?`${many?'':' · '}🏆${many?'':' '}${G.wins[i]}`:''}</small><span class="pts">${total(p)}</span></${tag}></li>`}).join('');
+  $('liveRank').querySelectorAll('button.lr').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;viewing=i===G.cur?null:i;tone(560,.04,'triangle',.08);render()});
   $('finishMatch').disabled=G.players.every(p=>!Object.keys(p.sc).length);
   renderSeats();orientCenter();
 }
@@ -1156,7 +1158,9 @@ async function setScore(i,cat,v){
   closePick();const p=G.players[i];
   if(v==='del'){delete p.sc[cat];tone(400,.08,'triangle',.1);save();render();return}
   if(v==='boca'){p.sc.gen=40;G.over=true;G.bocaBy=i;save();render();fanfare();fireworks(i);await wait(900);showEnd(i);return}
-  p.sc[cat]=+v;markSound();checkVoid(cat);save();render();
+  /* Casa nova marcada: a vez passa sozinha para o próximo (corrigir ou apagar não muda a vez) */
+  const nova=p.sc[cat]===undefined;
+  p.sc[cat]=+v;if(nova){G.cur=nextOpen(i);viewing=null}markSound();checkVoid(cat);save();render();
   if(cat==='gen'&&+v===40)fireworks(i);
   if(G.players.every(x=>Object.keys(x.sc).length===NCATS)){G.over=true;save();await wait(600);showEnd(null)}
 }
@@ -1173,7 +1177,7 @@ $('clearMatch').onclick=()=>{
   const b=$('clearMatch');
   if(!clearT){b.textContent='Toque de novo para zerar a partida';b.classList.add('ask');clearT=setTimeout(()=>{b.textContent='↺ Zerar partida';b.classList.remove('ask');clearT=null},3000);return}
   clearTimeout(clearT);clearT=null;b.textContent='↺ Zerar partida';b.classList.remove('ask');
-  G.players.forEach(p=>p.sc={});tone(300,.2,'triangle',.15);save();render();
+  G.players.forEach(p=>p.sc={});G.cur=0;viewing=null;tone(300,.2,'triangle',.15);save();render();
 };
 
 /* ---------- Computador ---------- */
