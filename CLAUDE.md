@@ -27,7 +27,8 @@ O app não carrega o `@capacitor/core` no JS: para falar com o Android use `wind
 - **Pedir baixo**: só a partir do 2º lançamento, vale para o próximo lançamento; os dados que caem valem a face de baixo (7 − valor); dados guardados não viram; dá para cancelar antes de lançar.
 - **De boca** = os 5 dados lançados juntos, sem guardar nenhum (no 1º lançamento ou no 2º/3º): Full 15, Seguida 25, Quadrada 35; normal: 10/20/30; General 40; **General de boca (em qualquer lançamento) encerra e vence na hora**. General também vale como Quadrada.
 - General (qualquer um, também no marcador) solta fogos de artifício simples na tela (faíscas em HTML/CSS + "GENERAL!" grande, virado para quem fez a jogada na mesa do tablet).
-- **Casa anulada**: quando **todos** marcam a mesma casa com os **mesmos pontos** (ex.: todos Quadrada 30), ela é riscada e não soma. Pontos diferentes (35 de boca × 30) **não** anulam; risco (0) nunca anula.
+- **Casa anulada**: quando **todos** marcam a mesma casa com os **mesmos pontos** (ex.: todos Quadrada 30), ela é riscada e não soma. Pontos diferentes (35 de boca × 30) **não** anulam; corte (0) nunca anula.
+- **Cortar** (não "riscar") é o nome de marcar 0 numa casa: botão "Cortar Full", resumo "2 cortes", opção "cortar" no marcador.
 - **Modo jogo: sem desfazer** — errou a marcação, é erro do jogador. **Modo marcador: pode corrigir/apagar.**
 - Ao sair Full/Seguida/Quadrada/General: brilho discreto + chance exata daquele lançamento.
 - O botão discreto "teste" (menu com "Forçar general", que saía General normal, nunca de boca) foi usado e **retirado** a pedido do dono; se ele pedir de novo, ver o histórico do git (commit "volta o botão de teste").
@@ -35,8 +36,12 @@ O app não carrega o `@capacitor/core` no JS: para falar com o Android use `wind
 
 ## Funcionalidades prontas
 
+- Computador se chama só **"Bot"** (com 🤖 na frente; com mais de um, Bot 1, Bot 2...); o nome não se edita. Partidas salvas antigas são renomeadas ao abrir.
+- Tela inicial: os campos de nome vêm **sempre em branco** (aparece "Jogador 1", "Jogador 2"...); o último nome digitado não fica salvo (`autocomplete=off`). Guarda só o número de jogadores e quem é computador. O placar de vitórias segue com "Próxima partida" (ou digitando os mesmos nomes).
 - Jogo no app (2–4 jogadores, pessoas e/ou computador) e **Só marcador** (2–8 jogadores, dados de verdade): ranking ao vivo, Finalizar partida a qualquer momento, Zerar partida.
-- Layout: tablet = mesa com cartelas em volta (≤4 jogadores); celular ou marcador com >4 = modo compacto (ranking/nomes escolhem a cartela). Tudo testado de 320×568 até 1280×800.
+- Layout: tablet = mesa com cartelas em volta (≤4 jogadores); celular ou marcador com >4 = modo compacto (ranking/nomes escolhem a cartela). Tudo testado de 320×568 até 1366×1024.
+- **Copo e dados sempre abaixo da cartela** (pedido do dono, ergonomia): celular em pé = placar / cartela / copo e dados / botões; celular deitado = coluna à esquerda com placar e botões, à direita cartela em cima e embaixo copo | dados | baixo e Marcar.
+- **Tablet, jogo no app** (`#game.tpanel`): o painel do copo (`#spinWrap`) muda de lugar a cada vez e fica entre a cartela de quem joga e a beirada da mesa, virado para ele; o "Vez de" fica no meio da mesa, virado para ele. `fitTable()` calcula o tamanho das cartelas para caber com o copo em qualquer lado (não muda de uma vez para outra) e escolhe entre laterais na altura toda ou cima/baixo na largura toda (classe `wide`). **Sozinho contra o computador** (≤1 pessoa): nada vira — computadores em cima, a pessoa embaixo e o copo sempre debaixo da cartela dela. Marcador no tablet continua como antes (ranking no meio, cartelas viradas).
 - Resumo no fim da partida; placar de vitórias e histórico mantidos **com os mesmos jogadores até "Zerar placar"/"Zerar tudo"**.
 - Salva tudo: reabrir volta na partida, no resumo ou na tela inicial.
 - Exportar: imagem do resultado (WhatsApp direto no app), texto, planilha .csv (navegador). Lembrete de exportar antes de zerar.
