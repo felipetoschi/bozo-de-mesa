@@ -1339,29 +1339,40 @@ const inApp=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativeP
 /* App: ao abrir, confere no GitHub se saiu versão nova e avisa na tela inicial e nas Regras (no site é sempre a mais nova) */
 let updUrl=null;
 let lastCheck=0;
+/* Link fixo que sempre baixa o APK da versão mais nova */
+const APK_URL='https://github.com/felipetoschi/bozo-de-mesa/releases/latest/download/bozo-de-mesa.apk';
+/* Número da versão mais nova publicada: no app, pela página de Releases (sem limite de consultas); senão, pela API do GitHub (60 por hora) */
+async function latestVersion(){
+  const num=t=>+String(t||'').replace(/^v1\.0\./,'')||0;
+  if(inApp){try{const r=await window.Capacitor.nativePromise('Versao','ultima',{});if(num(r.tag))return num(r.tag)}catch(e){}}
+  const r=await fetch('https://api.github.com/repos/felipetoschi/bozo-de-mesa/releases/latest',{cache:'no-store'});
+  if(!r.ok)throw new Error(r.status);
+  return num((await r.json()).tag_name);
+}
 async function checkUpdate(force){
   lastCheck=Date.now();
   const mine=+((VERSAO.match(/Versão 1\.0\.(\d+)/)||[])[1]||0);
   if(!(inApp||force)||!mine)return;
   const show=(txt,cls)=>document.querySelectorAll('.upd').forEach(e=>{e.hidden=false;e.className='upd '+cls;e.textContent=txt});
-  try{
-    const r=await fetch('https://api.github.com/repos/felipetoschi/bozo-de-mesa/releases/latest',{cache:'no-store'});
-    if(!r.ok)throw new Error(r.status);
-    const j=await r.json(),n=+String(j.tag_name||'').replace(/^v1\.0\./,'')||0;
-    if(n>mine){
-      const apk=(j.assets||[]).find(a=>/\.apk$/.test(a.name));updUrl=apk?apk.browser_download_url:j.html_url;
-      show(`⬇️ Tem versão nova (1.0.${n})! Toque para baixar`,'new');
-      /* Obrigatório: com versão nova, o jogo só continua depois de atualizar */
-      $('gateTxt').textContent=`Saiu a versão 1.0.${n} do Bozó de Mesa. Para continuar jogando, instale a versão nova (a sua é a 1.0.${mine}).`;
-      $('updGate').hidden=false;
-    }else show('✓ App atualizado: esta é a versão mais nova','ok');
-  }catch(e){show('Não deu para conferir se tem versão nova (sem internet?)','off')}
+  /* A versão nova que o app já descobriu fica guardada: sem internet, continua pedindo para atualizar */
+  let known=0;try{known=+localStorage.getItem('bozo-ultima')||0}catch(e){}
+  let n=0;try{n=await latestVersion()}catch(e){}
+  if(n>known){known=n;try{localStorage.setItem('bozo-ultima',String(n))}catch(e){}}
+  if(known>mine){
+    updUrl=APK_URL;
+    show(`⬇️ Tem versão nova (1.0.${known})! Toque para baixar`,'new');
+    /* Obrigatório: com versão nova, o jogo só continua depois de atualizar */
+    $('gateTxt').textContent=`Saiu a versão 1.0.${known} do Bozó de Mesa. Para continuar jogando, instale a versão nova (a sua é a 1.0.${mine}).`;
+    $('updGate').hidden=false;
+  }else if(n)show('✓ App atualizado: esta é a versão mais nova','ok');
+  else show('Não deu para conferir se tem versão nova (sem internet?)','off');
 }
 document.querySelectorAll('.upd').forEach(b=>b.onclick=()=>{if(updUrl)location.href=updUrl});
 $('gateBtn').onclick=()=>{if(updUrl)location.href=updUrl};
 checkUpdate();
-/* Voltando para o app depois de um tempo, confere de novo */
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-lastCheck>10*60*1000)checkUpdate()});
+/* Voltando para o app (o Android avisa pelo window.bozoVoltou; no navegador, pela troca de aba), confere de novo */
+window.bozoVoltou=()=>{if(Date.now()-lastCheck>30*1000)checkUpdate()};
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')window.bozoVoltou()});
 if(!inApp&&(document.fullscreenEnabled||document.webkitFullscreenEnabled)){
   $('full').hidden=false;
   $('full').onclick=()=>{const d=document.documentElement;try{fsEl()?(document.exitFullscreen||document.webkitExitFullscreen).call(document):(d.requestFullscreen||d.webkitRequestFullscreen).call(d)}catch(e){}};
