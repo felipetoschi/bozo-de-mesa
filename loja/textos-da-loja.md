@@ -23,11 +23,13 @@ O Bozó de Mesa leva o clássico jogo de dados de bar para o seu tablet ou celul
 👥 PARA JOGAR JUNTO
 • De 2 a 4 jogadores em volta do mesmo tablet.
 • No celular, é só passar o aparelho de mão em mão.
+• Jogo em duplas: cada um joga a sua vez e a dupla escolhe o melhor jogo para marcar.
 • Placar de vitórias para saber quem manda na mesa.
 
 📝 SÓ MARCADOR
-• Vai jogar com copo e dados de verdade? Use o app só para marcar: toque na casa e escolha os pontos.
-• Ranking da partida ao vivo e placar de vitórias de cada um.
+• Vai jogar com copo e dados de verdade? Use o app só para marcar, de 2 a 8 jogadores.
+• Uma pessoa marca para todos: toque na casa e escolha os pontos, e a vez passa sozinha.
+• No tablet, cada cartela fica virada para o seu dono, em volta da mesa.
 
 🎯 DETALHES DE MESA DE BAR
 • Casa anulada: se todo mundo fizer os mesmos pontos na mesma casa, ela não vale para ninguém.
@@ -35,12 +37,15 @@ O Bozó de Mesa leva o clássico jogo de dados de bar para o seu tablet ou celul
 • No fim de cada partida, um resumo com os destaques de cada jogador.
 
 🤖 CONTRA O COMPUTADOR
-• Jogue sozinho contra o computador, ou misture pessoas e computadores na mesma partida.
+• Jogue sozinho contra 1 a 3 computadores, ou misture pessoas e computadores na mesma partida.
+• Três níveis: fácil, médio e difícil. E o "Bot rápido", para o computador não demorar.
 
 📝 CARTELA DE PAPEL
 • Cartela minimalista, com linhas riscadas à caneta e pontos escritos à mão, como na mesa do bar.
 
 ✅ E MAIS
+• Sons de dados de verdade e vibração (dá para desligar).
+• Exporte o resultado como imagem e mande no WhatsApp.
 • Funciona sem internet.
 • Sem anúncios e sem compras dentro do app.
 • Não coleta nenhum dado: a partida fica salva só no seu aparelho.

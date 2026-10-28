@@ -4,6 +4,7 @@ Lista combinada para deixar o jogo com cara de app profissional (análise de 28/
 Marque `[x]` quando ficar pronto. A ordem é a sugerida (mais importante primeiro).
 
 ## Já feito
+- [x] Verificação para a Play Store: AAB sem o aviso do GitHub, fotos e textos da loja novos, tablet pequeno deitado com cartela legível — versão 1.0.55
 - [x] Botão "✕ Cancelar" ao cortar e marcador com uma pessoa só marcando (cartelas viradas para cada jogador no tablet) — versão 1.0.53
 - [x] Confirmação ao cortar, letras maiores no tablet e níveis do computador (fácil, médio, difícil) com bot rápido — versão 1.0.51
 - [x] Atualização obrigatória mais confiável (confere ao voltar para o app, sem limite do GitHub) — versão 1.0.49
@@ -18,7 +19,7 @@ Marque `[x]` quando ficar pronto. A ordem é a sugerida (mais importante primeir
 0. [ ] **Som gravado de lápis anotando** ao marcar — o som feito pelo app não ficou bom; falta um arquivo de som de verdade.
 1. [x] **Confirmação ao cortar** — "Cortar General? Vale zero". Evita o erro bobo sem mudar a regra de não poder desfazer.
 2. [ ] **Testes automáticos guardados no projeto** — os testes de tela e de partida rodando sozinhos a cada mudança, para nada quebrar sem ninguém perceber.
-3. [ ] **Fotos novas da loja + Play Store** — tirar capturas da tela nova e seguir o `PUBLICAR.md` (passos 3 a 7). Recomendação: grátis e sem anúncios no começo.
+3. [ ] **Fotos novas da loja + Play Store** (fotos e textos refeitos na 1.0.55; falta publicar) — tirar capturas da tela nova e seguir o `PUBLICAR.md` (passos 3 a 7). Recomendação: grátis e sem anúncios no começo.
 4. [ ] **Dados mais caprichados** — dados com sombra, rolando mais solto (o copo de couro já foi feito).
 5. [ ] **Mini tutorial na primeira vez** — 3 ou 4 telas: guardar dados, pedir baixo, "de boca" vale mais.
 6. [ ] **Regras com desenhos** — exemplos com dados desenhados (ex.: Full = 3 iguais + 2 iguais) em vez de só texto.

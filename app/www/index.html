@@ -368,8 +368,8 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
 .phone .tools .ask .tx{display:inline;font-size:12px}
 /* Celular bem pequeno: cartela um pouco mais baixa */
 @media (max-height:600px) and (min-height:500px){.phone #game{--ch:calc(var(--cw) * .54)}}
-/* Celular deitado: placar e botões numa coluna à esquerda; à direita a cartela em cima e o copo com os dados embaixo */
-@media (max-height:499px){
+/* Celular deitado (e tablet pequeno deitado): placar e botões numa coluna à esquerda; à direita a cartela em cima e o copo com os dados embaixo */
+@media (max-height:499px),(orientation:landscape) and (max-height:659px){
   .phone #game{grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto 1fr auto;
     grid-template-areas:"center chips" "center board" "center tools";
     --cw:min(300px,40vw);--ch:calc(var(--cw) * .6);--pw:calc(60vw - 150px)}
@@ -400,6 +400,8 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
   .phone #game:not(.scorer) #baixo{grid-column:2;grid-row:1}
   .phone #game:not(.scorer) .markRow{grid-column:2;grid-row:2;max-width:190px}
   .phone #game:not(.scorer) #cutNo{padding:4px 8px;font-size:13px}
+  /* Tablet pequeno deitado: sobra largura, o Marcar mostra o texto inteiro */
+  @media (min-width:900px) and (min-height:500px){.phone #game:not(.scorer) .markRow{max-width:300px}}
   .phone #game:not(.scorer) #roll{grid-column:3;grid-row:1/3}
   .phone #game:not(.scorer) #rollsLeft{grid-column:3;grid-row:3}
   .phone #game:not(.scorer) .die{width:clamp(26px,calc((100vw - 460px) / 5),52px)}
@@ -749,6 +751,8 @@ const botNames=bots=>{const n=bots.filter(Boolean).length;let k=0;return bots.ma
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 /* Versão e data/hora da atualização: o texto é colocado na compilação do app e do site (Actions) */
 const VERSAO='__VERSAO__';
+/* Versão da Play Store: a compilação do AAB troca para 'play'. Lá quem atualiza é a própria loja, então o app não confere o GitHub */
+const LOJA='__LOJA__';
 document.querySelectorAll('.ver').forEach(e=>e.textContent=VERSAO.startsWith('Vers')?VERSAO:'Versão de teste (sem número)');
 let G=null,duoMode=false,nDuos=2,nPlayers=2,nBots=1,flow='bot',botLevel='medio',botFast=false,busy=false,muted=false,draftNames=[],draftBots=[],gameMode='jogo';
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
@@ -1031,10 +1035,13 @@ const nextOpen=c=>{let n=c;for(let k=0;k<G.players.length;k++){n=nextPlayer(n);i
    Em cima o placar de todos; embaixo a cartela de quem joga (toque num nome para ver a cartela dele) */
 const phoneMQ=matchMedia('(max-width: 699px), (max-height: 499px)');
 const isPhone=()=>phoneMQ.matches;
-const compact=()=>isPhone()||!!(G&&!$('game').hidden&&G.players.length>4);
+/* Tablet pequeno deitado (7", uns 600 de altura): a mesa em volta deixaria as cartelas pequenas demais para ler,
+   então o jogo usa o mesmo jeito do celular deitado (a abertura e a tela de jogadores continuam como no tablet) */
+const shortMQ=matchMedia('(orientation: landscape) and (max-height: 659px)');
+const compact=()=>isPhone()||!!(G&&!$('game').hidden&&(G.players.length>4||shortMQ.matches));
 let viewing=null;
 function setMode(quiet){document.body.classList.toggle('phone',compact());if(!quiet&&G&&!$('game').hidden)render()}
-phoneMQ.addEventListener?phoneMQ.addEventListener('change',setMode):phoneMQ.addListener(setMode);
+[phoneMQ,shortMQ].forEach(m=>m.addEventListener?m.addEventListener('change',()=>setMode()):m.addListener(()=>setMode()));
 function renderPhone(){
   if(viewing!==null&&!G.players[viewing])viewing=null;
   const sc=isScorer(),show=viewing??G.cur;
@@ -1469,6 +1476,7 @@ async function latestVersion(){
 }
 async function checkUpdate(force){
   lastCheck=Date.now();
+  if(LOJA==='play')return;
   const mine=+((VERSAO.match(/Versão 1\.0\.(\d+)/)||[])[1]||0);
   if(!(inApp||force)||!mine)return;
   const show=(txt,cls)=>document.querySelectorAll('.upd').forEach(e=>{e.hidden=false;e.className='upd '+cls;e.textContent=txt});

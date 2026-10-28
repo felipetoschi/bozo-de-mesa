@@ -91,11 +91,20 @@ jobs:
             fi
             echo "Chave conferida: arquivo e senha corretos."
           fi
-          ./gradlew --no-daemon assembleRelease bundleRelease
-          rm -f "$RUNNER_TEMP/upload.jks"
+          ./gradlew --no-daemon assembleRelease
           if [ "$HAS_KEY" = "true" ]; then
             cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/bozo-de-mesa.apk"
           fi
+          # AAB da Play Store: sem o aviso de versão nova do GitHub (na loja, quem atualiza é a própria Play Store;
+          # e o APK do GitHub não instala por cima do app da loja, que tem outra assinatura)
+          sed -i "s|const LOJA='__LOJA__'|const LOJA='play'|" ../www/index.html
+          grep -q "const LOJA='play'" ../www/index.html
+          (cd .. && npx cap copy android)
+          ./gradlew --no-daemon bundleRelease
+          # Confere: o AAB é da loja e o APK dos amigos continua com o aviso de versão nova
+          unzip -p app/build/outputs/bundle/release/app-release.aab base/assets/public/index.html | grep -q "const LOJA='play'"
+          unzip -p app/build/outputs/apk/release/app-release*.apk assets/public/index.html | grep -q "const LOJA='__LOJA__'"
+          rm -f "$RUNNER_TEMP/upload.jks"
 
       - if: env.HAS_KEY == 'true'
         uses: actions/upload-artifact@v5
