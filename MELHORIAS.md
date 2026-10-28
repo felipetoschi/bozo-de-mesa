@@ -4,7 +4,7 @@ Lista combinada para deixar o jogo com cara de app profissional (análise de 28/
 Marque `[x]` quando ficar pronto. A ordem é a sugerida (mais importante primeiro).
 
 ## Já feito
-- [x] Confirmação ao cortar, letras maiores no tablet e níveis do computador (fácil, médio, difícil) com bot rápido — versão 1.0.51 (a confirmar)
+- [x] Confirmação ao cortar, letras maiores no tablet e níveis do computador (fácil, médio, difícil) com bot rápido — versão 1.0.51
 - [x] Atualização obrigatória mais confiável (confere ao voltar para o app, sem limite do GitHub) — versão 1.0.49
 - [x] Atualização obrigatória, botão "Voltar ao início" no fim e copo de couro — versão 1.0.45 (a textura de feltro foi retirada na 1.0.47, o dono não gostou)
 - [x] Sons gravados de dados (copo chacoalhando, dados caindo no feltro) — versão 1.0.43
