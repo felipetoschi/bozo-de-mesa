@@ -62,9 +62,9 @@ O app não carrega o `@capacitor/core` no JS: para falar com o Android use `wind
 - Versão nova para os amigos sai sozinha quando a mudança entra no main (o dono quer sempre pronto para o app). Link fixo: https://github.com/felipetoschi/bozo-de-mesa/releases/latest
 - O app tem a permissão INTERNET só para isso (sem ela o aviso dava "sem internet"; a política de privacidade explica). O app confere ao abrir (API do GitHub, `releases/latest`) se há versão maior que a dele e avisa na tela inicial/Regras: "Tem versão nova! Toque para baixar" (baixa o APK), "App atualizado" ou "Não deu para conferir". No site não aparece.
 
-Falta decidir/fazer (só se o dono pedir):
+Falta decidir/fazer (só se o dono pedir): a lista combinada com o dono está em **`MELHORIAS.md`** (próximos passos em ordem; marcar `[x]` e anotar a versão quando ficar pronto). Inclui:
 1. **Play Store** (ver `PUBLICAR.md`, passos 3 a 7). Recomendação já dada: publicar grátis e sem anúncios primeiro; anúncio intersticial no fim da partida só numa atualização futura.
-2. Opcional: capturas da loja atualizadas (sem o marcador e a exportação).
+2. Capturas da loja atualizadas (tela inicial nova, marcador, exportação).
 
 O projeto começou num branch do repositório de perfil `felipetoschi/felipetoschi` (`ccr-ee8ee3ac-gefrkk`); este repositório é a continuação com histórico novo.
 
