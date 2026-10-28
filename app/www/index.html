@@ -15,20 +15,22 @@
   --body:"Nunito",system-ui,sans-serif;
   color-scheme:dark;
 }
-html,body{height:100%}
+/* A tela fica parada como num jogo: a página não rola nem "puxa"; a mesa tem o tamanho exato da tela */
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+html{padding:0!important}
 body{background:var(--wood);color:var(--paper);font-family:var(--body);
-  padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px));padding-block:10px;box-sizing:border-box}
+  padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px));padding-top:max(10px,env(safe-area-inset-top,0px));padding-bottom:max(10px,env(safe-area-inset-bottom,0px));box-sizing:border-box}
 button{font-family:var(--body);cursor:pointer;-webkit-tap-highlight-color:transparent}
 /* O copo nunca mostra moldura ao ser tocado; no teclado ele só brilha no formato do copo */
 #roll,#roll:focus,#roll:focus-visible,#roll:active{outline:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
 #roll:focus-visible{filter:drop-shadow(0 0 6px var(--gold))}
 .die:focus:not(:focus-visible){outline:none}
 button:focus-visible,input:focus-visible,.cell:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-.mesa{min-height:100%;box-sizing:border-box;border-radius:28px;background:radial-gradient(ellipse at 50% 50%,var(--felt2),var(--felt) 75%);
+.mesa{height:100%;display:flex;flex-direction:column;overflow:auto;overscroll-behavior:none;box-sizing:border-box;border-radius:28px;background:radial-gradient(ellipse at 50% 50%,var(--felt2),var(--felt) 75%);
   box-shadow:inset 0 0 0 10px var(--wood2),inset 0 0 0 14px #0004,inset 0 0 60px #0008;padding:24px}
 
 /* ---------- Abertura (menu) e tela de jogadores ---------- */
-#menu,#setup{display:flex;flex-direction:column;gap:16px;align-items:center;justify-content:center;text-align:center;min-height:calc(100vh - 68px);min-height:calc(100dvh - 68px)}
+#menu,#setup{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:16px;align-items:center;justify-content:safe center;text-align:center}
 h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-size:clamp(32px,6vw,52px);text-shadow:0 3px 0 #0007}
 #menu h1{font-size:clamp(40px,10vw,68px);line-height:1}
 .tag{margin:4px 0 0;font-family:var(--hand);font-weight:700;font-size:26px;color:var(--muted)}
@@ -90,7 +92,7 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 /* ---------- Mesa de jogo ---------- */
 /* Mesa em volta: cartelas em cima, embaixo e nas laterais, dados sempre no meio */
 #game{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr) auto auto;
-  grid-template-areas:". top ." "left center right" ". bottom ." "tools tools tools";gap:10px;min-height:calc(100vh - 68px);min-height:calc(100dvh - 68px);
+  grid-template-areas:". top ." "left center right" ". bottom ." "tools tools tools";gap:10px;flex:1 1 auto;min-height:0;
   /* As cartelas medem pela largura e pela altura da tela, para a mesa inteira caber sem rolar */
   --cw:clamp(140px,min(28vw,calc((100vh - 430px) / 1.7)),250px);--cw:clamp(140px,min(28vw,calc((100dvh - 430px) / 1.7)),250px);--ch:calc(var(--cw) * .85)}
 .area{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap}
@@ -221,20 +223,41 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 #game.tpanel .area.left,#game.tpanel .area.right{flex-direction:row}
 #game.tpanel .area.hasP.top,#game.tpanel .area.hasP.bottom{flex-direction:column}
 #game.tpanel .center{min-height:0;padding:0}
-#game.tpanel #who{white-space:nowrap}
 .pslot{position:relative;flex:none}
-#game.tpanel .spin{width:max-content;transition:none;display:grid;grid-template-columns:auto 292px;column-gap:16px;row-gap:6px;align-items:center;justify-items:center}
+/* Painel de quem joga: dados grandes, aviso e Marcar; o copo fica à direita (de quem joga) */
+#game.tpanel .spin{width:max-content;transition:none;display:grid;column-gap:18px;row-gap:8px;align-items:center;justify-items:center}
 #game.tpanel .play,#game.tpanel .play .side{display:contents}
-#game.tpanel #roll{grid-column:1;grid-row:1/3;width:84px;height:94px}
-#game.tpanel .cup{font-size:15px}
-#game.tpanel #rollsLeft{grid-column:1;grid-row:3;font-size:13px}
-#game.tpanel #baixo{grid-column:1;grid-row:4}
-#game.tpanel .dice{grid-column:2;grid-row:1}
-#game.tpanel .die{width:52px}
-#game.tpanel #hint{grid-column:2;grid-row:2;min-height:46px;display:flex;flex-direction:column;justify-content:center}
+#game.tpanel #roll{width:104px;height:116px}
+#game.tpanel .cup{font-size:18px}
+#game.tpanel .dice{gap:10px}
+#game.tpanel .die{width:64px}
+#game.tpanel #rollsLeft{font-size:14px}
+#game.tpanel #baixo{font-size:15px;padding:8px 14px;min-height:42px}
+#game.tpanel #hint{min-height:46px;max-width:360px;display:flex;flex-direction:column;justify-content:center;font-size:15px}
 #game.tpanel #hint.flash{line-height:1.05}
-#game.tpanel .duo{grid-column:2;grid-row:3}
-#game.tpanel #mark{grid-column:2;grid-row:4;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#game.tpanel #mark{font-size:18px;padding:12px 18px;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Em bloco (mais quadrado): dados, aviso e Marcar | copo, lançamentos e baixo */
+#game.tpanel .spin[data-shape=block] {grid-template-columns:360px auto}
+#game.tpanel .spin[data-shape=block] .dice{grid-area:1/1}#game.tpanel .spin[data-shape=block] #hint{grid-area:2/1}#game.tpanel .spin[data-shape=block] .duo{grid-area:3/1}#game.tpanel .spin[data-shape=block] #mark{grid-area:4/1}
+#game.tpanel .spin[data-shape=block] #roll{grid-area:1/2/3/3}#game.tpanel .spin[data-shape=block] #rollsLeft{grid-area:3/2}#game.tpanel .spin[data-shape=block] #baixo{grid-area:4/2}
+/* Comprido (mais baixo, quando sobra largura): dados e aviso | Marcar e baixo | copo */
+#game.tpanel .spin[data-shape=long] {grid-template-columns:360px 250px auto}
+#game.tpanel .spin[data-shape=long] .dice{grid-area:1/1}#game.tpanel .spin[data-shape=long] #hint{grid-area:2/1}#game.tpanel .spin[data-shape=long] .duo{grid-area:3/1/4/3}#game.tpanel .spin[data-shape=long] #mark{grid-area:1/2}#game.tpanel .spin[data-shape=long] #baixo{grid-area:2/2}
+#game.tpanel .spin[data-shape=long] #roll{grid-area:1/3/3/4}#game.tpanel .spin[data-shape=long] #rollsLeft{grid-area:3/3}
+/* Meio da mesa: de quem é a vez e o placar ao vivo, virados para quem joga */
+.meio{display:none}
+#game.tpanel .meio{display:flex;flex-direction:column;align-items:center;gap:8px;width:280px;transform:rotate(var(--mr,0deg))}
+#game.tpanel #who{white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+/* Com pouca altura, "Vez de" e placar ficam lado a lado */
+#game.tpanel .meio[data-shape=row]{flex-direction:row;width:auto;gap:18px}
+#game.tpanel .meio[data-shape=row] #who{width:240px}
+#game.tpanel .meio[data-shape=row] .midRank{width:300px}
+.midRank{list-style:none;margin:0;padding:0;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.midRank li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:6px;padding:3px 9px;border-radius:10px;background:#0003;border:2px solid var(--line)}
+.midRank li.cur{border-color:var(--gold);box-shadow:0 0 10px #f0b93a66}
+.midRank .pos{font-size:12px;font-weight:900;color:var(--muted)}
+.midRank b{font-family:var(--hand);font-size:19px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.midRank span{font-family:var(--hand);font-size:22px;font-weight:700;color:var(--gold)}
 /* Dupla: o lugar dos dois jogos fica sempre reservado, para a mesa não mudar de tamanho no meio da vez */
 #game.tpanel.duoGame #duo[hidden]{display:flex!important;visibility:hidden}
 #game.tpanel.duoGame .duo{min-height:50px}
@@ -242,7 +265,7 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 /* ---------- Celular ---------- */
 body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-inset-right,0px)) max(4px,env(safe-area-inset-bottom,0px)) max(4px,env(safe-area-inset-left,0px))}
 .phone .mesa{padding:12px;border-radius:20px;box-shadow:inset 0 0 0 6px var(--wood2),inset 0 0 0 8px #0004,inset 0 0 40px #0008}
-.phone #menu,.phone #setup{min-height:calc(100vh - 48px);min-height:calc(100dvh - 48px);gap:12px;padding-block:6px}
+.phone #menu,.phone #setup{gap:12px;padding-block:6px}
 .phone .count button{width:52px;height:52px;font-size:22px}
 .phone .tableSet{gap:12px 6px}
 .phone .seatSet{padding:7px 5px 4px}
@@ -251,11 +274,11 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
 @media (max-height:700px){.phone #menu,.phone #setup{gap:9px}.phone #menu h1{font-size:40px}.phone .tag{font-size:21px}.phone .art{height:92px}.phone .go{padding:9px 14px}.phone .go b{font-size:17px}.phone .go small{font-size:12px}.phone .count button{width:46px;height:46px;font-size:20px}.phone #setup p.setTip{display:none}}
 /* Celular deitado: abertura em duas colunas (nome e copo | botões); jogadores com a mesinha à direita */
 @media (max-height:500px){
-  .phone #menu{display:grid;grid-template-columns:minmax(200px,1fr) minmax(0,400px);grid-template-areas:"logo btns" "art btns" "foot btns" "ver btns";align-content:center;justify-content:center;column-gap:24px;row-gap:6px}
+  .phone #menu{display:grid;grid-template-columns:minmax(200px,1fr) minmax(0,400px);grid-template-areas:"logo btns" "art btns" "foot btns" "ver btns";align-content:safe center;justify-content:center;column-gap:24px;row-gap:6px}
   .phone #menu .logo{grid-area:logo}.phone #menu .art{grid-area:art;justify-self:center;width:min(100%,230px)}.phone #menu .menuFoot{grid-area:foot}.phone #menu .menuBtns{grid-area:btns;gap:8px}
   .phone #menu .ver,.phone #menu .upd{grid-column:1}
   .phone #menu h1{font-size:30px;white-space:nowrap}.phone .tag{font-size:19px}.phone .go{padding:8px 14px}.phone .go .ic{font-size:24px}
-  .phone #setup{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);grid-template-areas:"head table" "ask table" "count table" "drow table" "tip table" "start table";align-content:center;column-gap:20px;row-gap:8px;justify-items:center}
+  .phone #setup{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);grid-template-areas:"head table" "ask table" "count table" "drow table" "tip table" "start table";align-content:safe center;column-gap:20px;row-gap:8px;justify-items:center}
   .phone .setHead{grid-area:head}.phone #countAsk{grid-area:ask}.phone #count{grid-area:count}.phone #duoRow{grid-area:drow}.phone #setTip{grid-area:tip}.phone #start{grid-area:start}
   .phone .tableSet{grid-area:table;gap:6px}
   @media (max-height:340px){.phone .felt small{display:none}.phone .felt{aspect-ratio:2.6}}
@@ -282,17 +305,18 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
 .phone .duo .mini svg{width:17px;height:17px}
 .phone .count button.duoBtn{width:auto;font-size:18px;padding:0 12px}
 .phone .names{grid-template-columns:1fr}
-.phone #game{display:grid;min-height:calc(100vh - 32px);min-height:calc(100dvh - 32px);gap:8px;
+.phone #game{display:grid;gap:8px;
   grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto 1fr auto;grid-template-areas:"chips" "center" "board" "tools";
   --cw:min(330px,calc(100vw - 40px));--ch:calc(var(--cw) * .6);--pw:calc(100vw - 40px)}
 .phone .area{display:none}
 .phone #game:not(.scorer){grid-template-rows:auto 1fr auto auto;grid-template-areas:"chips" "board" "center" "tools"}
+.phone #game:not(.scorer) .board{justify-content:flex-end}
 .phone .center{min-height:0;padding:0}
 .phone .spin{position:static;transform:none;width:100%;transition:none;gap:6px}
 .phone .who{font-size:20px}
 .phone .who small{font-size:10px;letter-spacing:1px}
 .phone .play{flex-direction:column;gap:6px;flex-wrap:nowrap}
-.phone .play .side:first-child{flex-direction:row;gap:12px}
+.phone .play .side:first-child{flex-direction:row-reverse;gap:12px}
 .phone #roll{width:62px;height:70px}
 .phone .cup{font-size:12px}
 .phone .cup::before{top:8px}.phone .cup::after{bottom:9px;height:5px}
@@ -352,16 +376,16 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
   /* Embaixo da cartela: copo | dados e aviso | baixo e Marcar (quem é a vez aparece no placar ao lado) */
   .phone #game:not(.scorer) .center{align-self:end}
   .phone #game:not(.scorer) .who{display:none}
-  .phone #game:not(.scorer) .spin{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 8px;align-items:center;justify-items:center}
+  .phone #game:not(.scorer) .spin{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:4px 8px;align-items:center;justify-items:center}
   .phone #game:not(.scorer) .play,.phone #game:not(.scorer) .play .side{display:contents}
-  .phone #game:not(.scorer) #roll{grid-column:1;grid-row:1/3}
-  .phone #game:not(.scorer) #rollsLeft{grid-column:1;grid-row:3}
-  .phone #game:not(.scorer) .dice{grid-column:2;grid-row:1}
-  .phone #game:not(.scorer) .duo{grid-column:2;grid-row:2;flex-wrap:nowrap}
-  .phone #game:not(.scorer) #hint{grid-column:2/4;grid-row:3;font-size:12px;max-width:none}
+  .phone #game:not(.scorer) .dice{grid-column:1;grid-row:1}
+  .phone #game:not(.scorer) .duo{grid-column:1;grid-row:2;flex-wrap:nowrap}
+  .phone #game:not(.scorer) #hint{grid-column:1/3;grid-row:3;font-size:12px;max-width:none}
   .phone #game:not(.scorer) #hint.flash{font-size:18px}
-  .phone #game:not(.scorer) #baixo{grid-column:3;grid-row:1}
-  .phone #game:not(.scorer) #mark{grid-column:3;grid-row:2;max-width:190px}
+  .phone #game:not(.scorer) #baixo{grid-column:2;grid-row:1}
+  .phone #game:not(.scorer) #mark{grid-column:2;grid-row:2;max-width:190px}
+  .phone #game:not(.scorer) #roll{grid-column:3;grid-row:1/3}
+  .phone #game:not(.scorer) #rollsLeft{grid-column:3;grid-row:3}
   .phone #game:not(.scorer) .die{width:clamp(26px,calc((100vw - 460px) / 5),52px)}
   .phone .chips{width:var(--cw)}
   .phone .chip{padding:3px 6px}
@@ -555,6 +579,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
         </div>
       </div>
      </div>
+     <div class="meio" id="meio"><ol class="midRank" id="midRank" aria-label="Placar ao vivo"></ol></div>
     </div>
     <div class="area right" id="areaRight"></div>
     <div class="area bottom" id="areaBottom"></div>
@@ -733,6 +758,13 @@ $('art').onclick=async()=>{
   audio();a.classList.add('shake');const rt=setInterval(rattle,70);await wait(reduce?150:550);clearInterval(rt);a.classList.remove('shake');
   const v=renderArt(true);landSound();if(v.every(x=>x===v[0])){fanfare();fireworks(null)}
 };
+/* Abertura e jogadores: se não couber na tela (celular baixinho), tudo encolhe um pouco em vez de rolar */
+function fitScreen(sec){
+  if(sec.hidden)return;sec.style.zoom='';
+  const k=Math.min(sec.clientHeight/sec.scrollHeight,sec.clientWidth/sec.scrollWidth);
+  if(k<1)sec.style.zoom=Math.max(.6,Math.floor(k*100)/100);
+}
+addEventListener('resize',()=>{fitScreen($('menu'));fitScreen($('setup'))});
 function renderMenu(){
   /* Partida guardada pela metade: dá para voltar nela */
   const g=G&&!G.over&&G.players.some(p=>Object.keys(p.sc).length)?G:null;
@@ -740,6 +772,7 @@ function renderMenu(){
   if(g)$('contSub').textContent=`${g.mode==='marcador'?'Só marcador':g.players.some(p=>p.bot)&&g.players.filter(p=>!p.bot).length===1?'Contra o computador':'Com amigos'} · ${g.players.map(p=>p.name).join(', ')}`;
   /* O botão amarelo é o mais provável: continuar, se tiver partida; senão, contra o computador */
   $('menu').querySelectorAll('.go').forEach(b=>b.classList.toggle('main',g?b===$('goCont'):b.dataset.flow==='bot'));
+  fitScreen($('menu'));
 }
 $('menu').querySelectorAll('.go[data-flow]').forEach(b=>b.onclick=()=>{
   if(flow!==b.dataset.flow){flow=b.dataset.flow;draftBots=[];duoMode=false}
@@ -796,6 +829,7 @@ function renderSetup(){
   };
   $('names').innerHTML=`<div class="felt" aria-hidden="true"><span class="mini">${dieSVG(5)}${dieSVG(2)}</span><small>${n} ${duoMode?'duplas':'jogadores'}</small></div>`+Array.from({length:n},(_,i)=>seat(i)).join('');
   $('names').querySelectorAll('.kind').forEach(b=>b.onclick=()=>{keepNames();const i=+b.dataset.i;draftBots[i]=!draftBots[i];tone(draftBots[i]?500:700,.05,'triangle',.1);renderSetup()});
+  fitScreen($('setup'));
 }
 function keepNames(){draftNames=Array.from({length:8},(_,i)=>{const el=$('nome'+i);return el?el.value:(draftNames[i]||'')})}
 $('start').onclick=()=>{
@@ -902,8 +936,9 @@ function renderSeats(){
     const pos=solo()?'bottom':posOf(G.cur),area=$('area'+pos[0].toUpperCase()+pos.slice(1)),ps=document.createElement('div');
     ps.className='pslot';area.classList.add('hasP');
     pos==='top'||pos==='left'?area.prepend(ps):area.append(ps);
-    ps.appendChild(spin);$('center').appendChild($('who'));
-    panelRot=solo()?0:ROT[pos];
+    ps.appendChild(spin);$('meio').prepend($('who'));
+    $('midRank').innerHTML=ranking().map(x=>{const p=G.players[x.i];return `<li class="${x.i===G.cur?'cur':''}"><em class="pos">${x.pos===1&&x.t>0?'👑':x.pos+'º'}</em><b>${p.bot?'🤖 ':''}${esc(p.name)}</b><span>${x.t}</span></li>`}).join('');
+    panelRot=solo()?0:ROT[pos];fitTable(pos);
     const side=pos==='left'||pos==='right';
     ps.style.width=(side?spin.offsetHeight:spin.offsetWidth)+'px';ps.style.height=(side?spin.offsetWidth:spin.offsetHeight)+'px';
   }}
@@ -916,30 +951,38 @@ const seatRot=i=>compact()||solo()?0:ROT[posOf(i)]||0;
 function orientCenter(){
   if(!G||$('game').hidden)return;
   const s=$('spinWrap').style;
-  if(tablePanel()){s.setProperty('--cr',panelRot+'deg');$('who').style.transform=`rotate(${panelRot}deg)`;fitTable();return}
-  $('who').style.transform='';$('game').style.removeProperty('--cw');
+  if(tablePanel()){s.setProperty('--cr',panelRot+'deg');$('meio').style.setProperty('--mr',panelRot+'deg');return}
+  $('game').style.removeProperty('--cw');
   s.setProperty('--cr','0deg');if(!compact()){const b=$('center').getBoundingClientRect();s.setProperty('--iw',Math.max(220,b.width-12)+'px')}
 }
-/* Tamanho das cartelas no tablet: o maior que deixa a mesa inteira sem rolar, com o copo em qualquer lado (assim nada muda de tamanho quando passa a vez) */
-function fitTable(){
-  const gm=$('game'),spin=$('spinWrap'),P=spin.offsetHeight,PW=spin.offsetWidth,T=gm.querySelector('.tools').offsetHeight,wh=56,g=12;
-  const W=gm.clientWidth,H=innerHeight-68,map=seatMap(),n=k=>(map[k]||[]).length;
+/* Tamanho das cartelas no tablet: o maior que deixa a mesa inteira na tela, com o painel do copo em qualquer lado e o placar no meio
+   (assim nada muda de tamanho quando passa a vez). O painel tem dois formatos: comprido (mais baixo) ou em bloco (mais estreito) */
+function fitTable(pos){
+  const gm=$('game'),spin=$('spinWrap'),T=gm.querySelector('.tools').offsetHeight,g=12;
+  const W=gm.clientWidth,H=gm.clientHeight-T-10,map=seatMap(),n=k=>(map[k]||[]).length;
+  const meio=$('meio'),shapes={},mids={};
+  for(const sh of ['long','block']){spin.dataset.shape=sh;shapes[sh]=[spin.offsetWidth,spin.offsetHeight]}
+  for(const sh of ['row','col']){meio.dataset.shape=sh;mids[sh]=[meio.offsetWidth,meio.offsetHeight]}
   const sides=solo()?['bottom']:Object.keys(map).filter(k=>n(k));
-  /* Dois jeitos de arrumar: cartelas da esquerda/direita na altura toda (bom deitado) ou as de cima/baixo na largura toda (bom em pé) */
-  const fits=(cw,wide)=>{const ch=cw*.85,row=k=>n(k)?n(k)*cw+(n(k)-1)*g:0;
-    return sides.every(s=>{
-      const wl=(n('left')?ch:0)+(s==='left'?P+g:0),wr=(n('right')?ch:0)+(s==='right'?P+g:0);
-      const wtb=Math.max(row('top'),row('bottom'),s==='top'||s==='bottom'?PW:0);
-      const ht=(n('top')?ch:0)+(s==='top'?P+g:0),hb=(n('bottom')?ch:0)+(s==='bottom'?P+g:0);
-      const hs=Math.max(n('left')||n('right')?cw:0,s==='left'||s==='right'?PW:0);
-      if(wide)return Math.max(wtb,wl+wr+wh+2*g)<=W&&ht+hb+Math.max(hs,wh)+2*g+T+g<=H;
-      return wl+Math.max(wtb,wh)+wr+2*g<=W&&Math.max(ht+hb+wh+2*g,hs)+T+g<=H})};
-  const best=wide=>{let cw=280;while(cw>120&&!fits(cw,wide))cw-=4;return cw};
-  const tall=best(false),wide=best(true);
-  gm.classList.toggle('wide',wide>tall);
-  gm.style.setProperty('--cw',Math.max(tall,wide)+'px');
+  const ok=(cw,wide,s,[PW,P],[mw,mh])=>{
+    const ch=cw*.85,row=k=>n(k)?n(k)*cw+(n(k)-1)*g:0,side=s==='left'||s==='right';
+    const [nw,nh]=side&&!solo()?[mh,mw]:[mw,mh];
+    const wl=(n('left')?ch:0)+(s==='left'?P+g:0),wr=(n('right')?ch:0)+(s==='right'?P+g:0);
+    const wtb=Math.max(row('top'),row('bottom'),side?0:PW);
+    const ht=(n('top')?ch:0)+(s==='top'?P+g:0),hb=(n('bottom')?ch:0)+(s==='bottom'?P+g:0);
+    const hs=Math.max(n('left')||n('right')?cw:0,side?PW:0);
+    /* Dois jeitos de arrumar: laterais na altura toda (bom deitado) ou cima/baixo na largura toda (bom em pé) */
+    if(wide)return Math.max(wtb,wl+nw+wr+2*g)<=W&&ht+hb+Math.max(hs,nh)+2*g<=H;
+    return wl+Math.max(wtb,nw)+wr+2*g<=W&&Math.max(ht+hb+nh+2*g,hs)<=H};
+  /* Formato do painel e do meio que cabem com o copo no lado s (o primeiro que servir) */
+  const shapeFor=(cw,wide,s)=>{const side=s==='left'||s==='right';
+    for(const ps of side?['block','long']:['long','block'])for(const ms of side&&!solo()?['col','row']:['row','col'])if(ok(cw,wide,s,shapes[ps],mids[ms]))return [ps,ms]};
+  const best=wide=>{let cw=280;while(cw>110&&!sides.every(s=>shapeFor(cw,wide,s)))cw-=4;return cw};
+  const tall=best(false),wd=best(true),wide=wd>tall,cw=Math.max(tall,wd);
+  gm.classList.toggle('wide',wide);gm.style.setProperty('--cw',cw+'px');
+  [spin.dataset.shape,meio.dataset.shape]=shapeFor(cw,wide,pos)||['block','col'];
 }
-addEventListener('resize',orientCenter);
+addEventListener('resize',()=>{if(G&&!$('game').hidden&&tablePanel())render();else orientCenter()});
 function render(){
   $('game').classList.toggle('scorer',isScorer());
   if(isScorer())return renderScorer();
