@@ -27,29 +27,62 @@ button:focus-visible,input:focus-visible,.cell:focus-visible{outline:3px solid v
 .mesa{min-height:100%;box-sizing:border-box;border-radius:28px;background:radial-gradient(ellipse at 50% 50%,var(--felt2),var(--felt) 75%);
   box-shadow:inset 0 0 0 10px var(--wood2),inset 0 0 0 14px #0004,inset 0 0 60px #0008;padding:24px}
 
-/* ---------- Tela inicial ---------- */
-#setup{display:flex;flex-direction:column;gap:18px;align-items:center;justify-content:center;text-align:center;min-height:calc(100vh - 68px)}
+/* ---------- Abertura (menu) e tela de jogadores ---------- */
+#menu,#setup{display:flex;flex-direction:column;gap:16px;align-items:center;justify-content:center;text-align:center;min-height:calc(100vh - 68px);min-height:calc(100dvh - 68px)}
 h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-size:clamp(32px,6vw,52px);text-shadow:0 3px 0 #0007}
-#setup p{margin:0;color:var(--muted);font-size:18px}
+#menu h1{font-size:clamp(40px,10vw,68px);line-height:1}
+.tag{margin:4px 0 0;font-family:var(--hand);font-weight:700;font-size:26px;color:var(--muted)}
+/* Copo deitado derramando os dados no feltro (toque para chacoalhar) */
+.art{position:relative;width:min(100%,300px);aspect-ratio:300/112;--dw:15%;border:none;background:none;padding:0;flex:none;-webkit-tap-highlight-color:transparent}
+.art:focus:not(:focus-visible){outline:none}
+.artcup{position:absolute;left:7%;top:7%;width:23%;height:75%;background:linear-gradient(90deg,#3d1f0c,#9a5c2a 42%,#5a3317 80%);clip-path:polygon(12% 0,88% 0,100% 100%,0 100%);transform:rotate(-72deg);filter:drop-shadow(0 6px 4px #0006)}
+.art.shake .artcup{animation:shake .09s linear infinite}
+#artDice .die{position:absolute;width:var(--dw);pointer-events:none}
+.artdice .die.spill{animation:spill .7s cubic-bezier(.2,.8,.3,1) backwards}
+@keyframes spill{from{transform:translate(-120px,10px) rotate(-260deg) scale(.6);opacity:0}}
+.menuBtns{display:flex;flex-direction:column;gap:12px;width:min(100%,400px)}
+.go{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:13px 18px;border-radius:18px;border:2px solid #ffffff2e;background:#0003;color:var(--paper);box-shadow:0 4px 0 #0004;font:inherit}
+.go:active{transform:translateY(3px);box-shadow:0 1px 0 #0004}
+.go .ic{font-size:30px;line-height:1;flex:none}
+.go b{display:block;font-family:var(--display);font-weight:400;font-size:19px;color:var(--gold);line-height:1.15}
+.go small{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-top:3px}
+.go.main{background:var(--gold);border-color:var(--gold);box-shadow:0 5px 0 #a87a1e}
+.go.main b{color:var(--ink)}.go.main small{color:#5f4a38}
+.go.cont small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.go.cont>span:last-child{min-width:0}
+.menuFoot{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.menuFoot button{border:1px solid var(--line);background:#0003;color:var(--muted);border-radius:10px;padding:8px 14px;font-weight:800;min-height:40px}
+/* Tela de jogadores: cada um escreve o nome numa plaquinha de papel, em volta de uma mesinha */
+.setHead{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;width:min(100%,560px)}
+.setHead h2{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-size:clamp(19px,5vw,30px);line-height:1.1;text-shadow:0 2px 0 #0007;text-wrap:balance}
+.back{justify-self:start;border:1px solid var(--line);background:#0003;color:var(--muted);border-radius:10px;padding:8px 12px;font-weight:800;min-height:40px}
+#setup p{margin:0;color:var(--muted);font-size:17px;font-weight:700}
+#setup p.setTip{font-size:13px;max-width:44ch}
 .count{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.count button{width:68px;height:68px;border-radius:16px;border:2px solid var(--line);background:#0003;color:var(--paper);font-family:var(--display);font-size:30px}
-.count button.duoBtn{width:auto;padding:0 16px;font-size:22px}
-.names .pl.duoPl{min-width:0}
-.names .pl.duoPl .plrow input{flex:1 1 0;width:0}
+.count button{width:60px;height:60px;border-radius:16px;border:2px solid var(--line);background:#0003;color:var(--paper);font-family:var(--display);font-size:26px}
+.count button.duoBtn{width:auto;padding:0 16px;font-size:20px}
 .count button[aria-pressed="true"]{background:var(--gold);color:var(--ink);border-color:var(--gold)}
-.names{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;width:min(100%,680px)}
-.names .pl{min-width:0;display:flex;flex-direction:column;gap:4px;text-align:left}
-.names label{font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
-.plrow{display:flex;gap:6px}
-.names input{flex:1;font:inherit;font-size:17px;padding:10px 12px;border-radius:10px;border:2px solid var(--line);background:#0003;color:var(--paper);min-width:0}
-.names input:disabled{color:var(--muted);-webkit-text-fill-color:var(--muted);opacity:1;font-weight:800}
-.kind{flex:none;border:2px solid var(--line);background:#0003;color:var(--paper);border-radius:10px;padding:0 10px;font-weight:800;font-size:14px}
-.kind[aria-pressed="true"]{border-color:var(--gold);color:var(--gold)}
+.dRow{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.dRow[hidden]{display:none}
+.dRow .count button{width:46px;height:46px;font-size:20px;border-radius:13px}
+.duoSet input{font-size:20px;padding:0}
+.duoSet .e{margin:-2px 0}
+.tableSet{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-areas:"tl tm tr" "ml mm mr" "bl bm br";gap:14px 10px;width:min(100%,540px);align-items:center}
+.felt{grid-area:mm;aspect-ratio:1.5;border-radius:50%;background:radial-gradient(ellipse at 50% 40%,var(--felt2),var(--felt) 80%);box-shadow:0 0 0 5px var(--wood2),0 0 0 7px #0005,0 10px 18px #0007;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.felt .mini{display:flex;gap:4px}.felt .mini svg{width:22px;height:22px;display:block}
+.felt small{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.5px}
+.seatSet{position:relative;min-width:0;background:var(--paper);color:var(--pen);border-radius:6px;padding:8px 8px 6px;box-shadow:0 5px 12px #0007;display:flex;flex-direction:column;align-items:stretch;gap:2px}
+.seatSet .ord{position:absolute;top:-9px;left:-7px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:var(--ink);font-weight:900;font-size:12px;display:grid;place-items:center;box-shadow:0 2px 0 #a87a1e}
+.seatSet input{width:100%;min-width:0;box-sizing:border-box;border:none;border-bottom:2px solid var(--pen);border-radius:0 0 40% 60%/0 0 5px 4px;background:none;font-family:var(--hand);font-weight:700;font-size:22px;color:var(--pen);text-align:center;padding:2px 0;outline-offset:4px}
+.seatSet input::placeholder{color:var(--pencil);font-weight:500;opacity:1}
+.seatSet .e{font-family:var(--hand);font-size:16px;color:#9b8c78;line-height:1}
+.seatSet .botName{font-family:var(--hand);font-weight:700;font-size:22px;text-align:center;padding:2px 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seatSet.bot{background:#e9e1cf}
+.kind{border:none;background:none;color:#7a6250;font:inherit;font-size:12px;font-weight:800;padding:4px 0 0;min-height:24px}
 .upd{display:block;width:fit-content;max-width:100%;margin:0 auto;border:none;background:none;color:var(--muted);font:inherit;font-size:13px;font-weight:700;text-align:center}
 .upd[hidden]{display:none}
 .upd.new{background:var(--gold);color:var(--ink);border-radius:12px;padding:8px 14px;font-weight:900;font-size:15px;box-shadow:0 3px 0 #a87a1e}
 .ver{display:block;margin:0;color:var(--muted);opacity:.75;font-size:12px;text-align:center}
-.vsbot{border:2px solid var(--gold);background:none;color:var(--gold);border-radius:14px;padding:10px 20px;font-weight:900;font-size:16px}
 .big{border:none;border-radius:14px;background:var(--gold);color:var(--ink);font-family:var(--display);font-size:22px;padding:14px 34px;box-shadow:0 5px 0 #a87a1e}
 .big:active{transform:translateY(3px);box-shadow:0 2px 0 #a87a1e}
 .big:disabled{opacity:.45;cursor:default;transform:none;box-shadow:0 5px 0 #a87a1e}
@@ -209,12 +242,41 @@ h1{font-family:var(--display);font-weight:400;color:var(--gold);margin:0;font-si
 /* ---------- Celular ---------- */
 body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-inset-right,0px)) max(4px,env(safe-area-inset-bottom,0px)) max(4px,env(safe-area-inset-left,0px))}
 .phone .mesa{padding:12px;border-radius:20px;box-shadow:inset 0 0 0 6px var(--wood2),inset 0 0 0 8px #0004,inset 0 0 40px #0008}
-.phone #setup{min-height:calc(100dvh - 48px);gap:14px;padding-block:8px}
-/* Celular baixo: tela inicial mais junta, para o Começar aparecer sem rolar (ou rolando pouco) */
-/* Celular deitado: nomes em duas colunas, para o Começar aparecer mais cedo */
-@media (max-height:500px){body.phone .names{grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,760px)}.phone #setup h1{font-size:26px}.phone #setup>p{font-size:15px}}
-@media (max-height:700px){.phone #setup{gap:9px;padding-block:2px}.phone #setup h1{font-size:30px;margin:0}.phone .modes button{padding:6px 12px}.phone .count button{width:50px;height:50px}}
-.phone .count button{width:56px;height:56px;font-size:24px}
+.phone #menu,.phone #setup{min-height:calc(100vh - 48px);min-height:calc(100dvh - 48px);gap:12px;padding-block:6px}
+.phone .count button{width:52px;height:52px;font-size:22px}
+.phone .tableSet{gap:12px 6px}
+.phone .seatSet{padding:7px 5px 4px}
+.phone .seatSet input,.phone .seatSet .botName{font-size:19px}
+/* Celular baixo (em pé): tudo mais junto, para o Começar aparecer sem rolar */
+@media (max-height:700px){.phone #menu,.phone #setup{gap:9px}.phone #menu h1{font-size:40px}.phone .tag{font-size:21px}.phone .art{height:92px}.phone .go{padding:9px 14px}.phone .go b{font-size:17px}.phone .go small{font-size:12px}.phone .count button{width:46px;height:46px;font-size:20px}.phone #setup p.setTip{display:none}}
+/* Celular deitado: abertura em duas colunas (nome e copo | botões); jogadores com a mesinha à direita */
+@media (max-height:500px){
+  .phone #menu{display:grid;grid-template-columns:minmax(200px,1fr) minmax(0,400px);grid-template-areas:"logo btns" "art btns" "foot btns" "ver btns";align-content:center;justify-content:center;column-gap:24px;row-gap:6px}
+  .phone #menu .logo{grid-area:logo}.phone #menu .art{grid-area:art;justify-self:center;width:min(100%,230px)}.phone #menu .menuFoot{grid-area:foot}.phone #menu .menuBtns{grid-area:btns;gap:8px}
+  .phone #menu .ver,.phone #menu .upd{grid-column:1}
+  .phone #menu h1{font-size:30px;white-space:nowrap}.phone .tag{font-size:19px}.phone .go{padding:8px 14px}.phone .go .ic{font-size:24px}
+  .phone #setup{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);grid-template-areas:"head table" "ask table" "count table" "drow table" "tip table" "start table";align-content:center;column-gap:20px;row-gap:8px;justify-items:center}
+  .phone .setHead{grid-area:head}.phone #countAsk{grid-area:ask}.phone #count{grid-area:count}.phone #duoRow{grid-area:drow}.phone #setTip{grid-area:tip}.phone #start{grid-area:start}
+  .phone .tableSet{grid-area:table;gap:6px}
+  @media (max-height:340px){.phone .felt small{display:none}.phone .felt{aspect-ratio:2.6}}
+  .phone .felt{aspect-ratio:2.2}
+  .phone .setHead{width:100%;grid-template-columns:auto minmax(0,1fr)}
+  .phone .setHead>span{display:none}
+  .phone .setHead h2{font-size:20px;text-align:left}
+  .phone .back{padding:6px 10px;min-height:34px}
+  .phone .count{gap:6px}
+  .phone .count button{width:42px;height:42px;font-size:19px;border-radius:12px}
+  .phone .count button.duoBtn{padding:0 10px;font-size:16px}
+  .phone .dRow{gap:6px}
+  .phone .dRow .count button{width:38px;height:38px;font-size:17px}
+  .phone #setup p{font-size:15px}
+  .phone .duoSet .e{display:none}
+  .phone .duoSet{gap:4px;padding-top:6px}
+  .phone .duoSet input{font-size:17px}
+  .phone #start{font-size:19px;padding:10px 26px}
+}
+/* Celular pequeno (em pé): abertura mais baixa */
+@media (max-height:600px) and (min-height:501px){.phone #menu h1{font-size:34px}.phone .art{width:min(100%,220px)}.phone .go small{display:none}.phone .duoSet .e{display:none}.phone .duoSet{gap:4px}.phone .count button{width:42px;height:42px;font-size:19px}.phone .dRow .count button{width:38px;height:38px}.phone #setup{gap:7px}}
 .phone #game.duoOn #hint:not(.flash){display:none}
 .phone .duo button{padding:2px 6px;gap:2px}
 .phone .duo .mini svg{width:17px;height:17px}
@@ -315,12 +377,6 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
   .phone .center{align-self:center}
 }
 /* ---------- Tela inicial: jogar no app ou só marcar ---------- */
-.modes{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.modes button{display:flex;flex-direction:column;gap:2px;align-items:center;min-width:180px;padding:10px 16px;border-radius:14px;border:2px solid var(--line);background:#0003;color:var(--paper)}
-.modes button b{font-size:17px;font-weight:900}
-.modes button small{font-size:12px;font-weight:700;color:var(--muted)}
-.modes button[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:var(--ink)}
-.modes button[aria-pressed="true"] small{color:#5f4a38}
 
 /* ---------- Casa anulada: os pontos ficam riscados à caneta ---------- */
 .cell.void b{color:#a39a8c}
@@ -362,7 +418,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
 .finish{border:2px solid var(--gold);background:#0003;color:var(--gold);border-radius:10px;padding:6px 14px;font-weight:900;min-height:38px}
 .finish.ask{background:var(--gold);color:var(--ink)}
 .finish:disabled{opacity:.4;cursor:default}
-.count.many button{width:52px;height:52px;font-size:23px;border-radius:13px}
+.count.many button{width:46px;height:46px;font-size:21px;border-radius:13px}
 .btns .ghost.reset{border-color:#7a6250;color:#7a6250;font-size:14px;padding:8px 14px}
 .live .pts{font-family:var(--hand);font-size:26px;font-weight:700;color:var(--gold);min-width:2.2ch;text-align:right}
 .clear{border:1px solid var(--line);background:#0003;color:var(--muted);border-radius:10px;padding:8px 14px;font-weight:800;min-height:38px}
@@ -444,22 +500,30 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
 </style>
 
 <div class="mesa">
-  <!-- Tela inicial -->
-  <section id="setup">
-    <h1>Bozó de Mesa</h1>
-    <div class="modes" id="modes" role="group" aria-label="Como vão jogar">
-      <button data-m="jogo"><b>🎲 Jogar no app</b><small>copo e dados na tela</small></button>
-      <button data-m="marcador"><b>📝 Só marcador</b><small>dados de verdade, o app marca</small></button>
+  <!-- Abertura: escolher como jogar -->
+  <section id="menu">
+    <div class="logo"><h1>Bozó de Mesa</h1><p class="tag">o jogo de dados do bar</p></div>
+    <button class="art" id="art" aria-label="Chacoalhar os dados"><span class="artcup"></span><span class="artdice" id="artDice"></span></button>
+    <div class="menuBtns">
+      <button class="go cont" id="goCont" hidden><span class="ic">▶️</span><span><b>Continuar partida</b><small id="contSub"></small></span></button>
+      <button class="go" data-flow="bot"><span class="ic">🤖</span><span><b>Jogar contra o computador</b><small>você contra 1 a 3 bots</small></span></button>
+      <button class="go" data-flow="amigos"><span class="ic">👥</span><span><b>Jogar com amigos</b><small>2 a 4 pessoas ou em duplas, no mesmo aparelho</small></span></button>
+      <button class="go" data-flow="marcador"><span class="ic">📝</span><span><b>Só marcador</b><small>dados de verdade, o app marca os pontos</small></span></button>
     </div>
-    <p>Quantos jogadores vão jogar?</p>
-    <div class="count" id="count" role="group" aria-label="Número de jogadores"></div>
-    <p id="duoAsk" hidden>Quantas duplas?</p>
-    <div class="count" id="duoCount" role="group" aria-label="Número de duplas" hidden></div>
-    <div class="names" id="names"></div>
-    <button class="big" id="start">Começar</button>
-    <button class="vsbot" id="vsBot">🤖 Jogar contra o computador</button>
+    <div class="menuFoot"><button id="menuRules">📖 Regras</button><button id="menuSound"></button></div>
     <small class="ver"></small>
     <button class="upd" hidden></button>
+  </section>
+
+  <!-- Jogadores: quantos e os nomes, em volta de uma mesinha -->
+  <section id="setup" hidden>
+    <div class="setHead"><button class="back" id="back">← Voltar</button><h2 id="setTitle"></h2><span></span></div>
+    <p id="countAsk"></p>
+    <div class="count" id="count" role="group" aria-labelledby="countAsk"></div>
+    <div class="dRow" id="duoRow" hidden><p id="duoAsk">Quantas duplas?</p><div class="count" id="duoCount" role="group" aria-label="Número de duplas"></div></div>
+    <div class="tableSet" id="names"></div>
+    <p class="setTip" id="setTip"></p>
+    <button class="big" id="start">Começar</button>
   </section>
 
   <!-- Jogo -->
@@ -519,7 +583,7 @@ body.phone{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-i
       <li>Casa anulada: se todos os jogadores marcarem a mesma casa com os mesmos pontos (por exemplo, todos fizeram Quadrada 30), ela fica riscada e não conta na soma de ninguém.</li>
       <li>Full (3 + 2 iguais) 10, Seguida (1 a 5 ou 2 a 6) 20, Quadrada (4 iguais) 30, General (5 iguais) 40.</li>
       <li>De boca (os 5 dados lançados juntos, sem guardar nenhum — no primeiro lançamento ou nos outros): Full 15, Seguida 25, Quadrada 35. General de boca acaba o jogo e ganha na hora, em qualquer rodada e em qualquer lançamento.</li>
-      <li>Na tela inicial, troque qualquer jogador para 🤖 Computador, ou toque em "Jogar contra o computador".</li>
+      <li>Na abertura, toque em "Jogar contra o computador" para jogar contra 1 a 3 bots. Em "Jogar com amigos", dá para trocar qualquer lugar por um bot.</li>
       <li>Quando todas as cartelas estiverem cheias, ganha quem tiver mais pontos.</li>
       <li>Dupla: de 2 a 4 duplas (toque em Dupla e escolha quantas), cada uma com uma cartela. Na vez da dupla, o primeiro joga (até 3 lançamentos) e aperta "Guardar jogo"; depois o parceiro joga. No fim aparecem os dois jogos: escolha um deles, toque na casa e aperte Marcar. General de boca de qualquer um dos dois ganha na hora.</li>
       <li>Só marcador: para jogar com copo e dados de verdade, de 2 a 8 jogadores. Toque numa casa de qualquer cartela e escolha os pontos; toque de novo para corrigir. Com mais de 4 jogadores (ou no celular), toque no nome no ranking para ver a cartela de cada um.</li>
@@ -591,7 +655,7 @@ const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 /* Versão e data/hora da atualização: o texto é colocado na compilação do app e do site (Actions) */
 const VERSAO='__VERSAO__';
 document.querySelectorAll('.ver').forEach(e=>e.textContent=VERSAO.startsWith('Vers')?VERSAO:'Versão de teste (sem número)');
-let G=null,duoMode=false,nDuos=2,nPlayers=2,busy=false,muted=false,draftNames=[],draftBots=[],gameMode='jogo';
+let G=null,duoMode=false,nDuos=2,nPlayers=2,nBots=1,flow='bot',busy=false,muted=false,draftNames=[],draftBots=[],gameMode='jogo';
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
 /* Só marcador: o jogo é com copo e dados de verdade e o app só marca os pontos */
 const isScorer=()=>!!(G&&G.mode==='marcador');
@@ -625,8 +689,8 @@ function fireworks(who){
 const fanfare=()=>[523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,.22,'triangle',.18,i*.12));
 /* Botões da barra: ícone + texto (no celular aparece só o ícone, menos quando pede confirmação) */
 function setBtn(id,ic,tx,ask){const b=$(id);b.innerHTML=`<span class="ic">${ic}</span><span class="tx">${tx}</span>`;b.classList.toggle('ask',!!ask)}
-function setSoundLabel(){setBtn('sound',muted?'🔇':'🔊','Som')}
-$('sound').onclick=()=>{muted=!muted;setSoundLabel();try{localStorage.setItem('bozo-mute',muted?'1':'0')}catch(e){}};
+function setSoundLabel(){setBtn('sound',muted?'🔇':'🔊','Som');$('menuSound').textContent=muted?'🔇 Som desligado':'🔊 Som'}
+$('sound').onclick=$('menuSound').onclick=()=>{muted=!muted;setSoundLabel();try{localStorage.setItem('bozo-mute',muted?'1':'0')}catch(e){}};
 
 /* ---------- Pontuação ---------- */
 function points(cat,dice,deBoca){
@@ -655,36 +719,85 @@ const duoMember=()=>G.players[G.cur].duo[G.half||0];
 function save(){try{localStorage.setItem('bozo-game2',JSON.stringify(G))}catch(e){}}
 function load(){try{const g=JSON.parse(localStorage.getItem('bozo-game2'));if(g&&g.players&&g.players.length<=8){g.wins=g.wins||g.players.map(()=>0);g.games=g.games||0;g.baixo=false;g.mode=g.mode||'jogo';g.hist=g.hist||[];const bn=botNames(g.players.map(p=>!!p.bot));g.players.forEach((p,i)=>{if(p.bot)p.name=bn[i]});return g}}catch(e){}return null}
 
-/* ---------- Tela inicial ---------- */
+/* ---------- Abertura e tela de jogadores ---------- */
+const showScreen=id=>['menu','setup','game'].forEach(k=>$(k).hidden=k!==id);
+/* Copo derramando os dados: cada toque chacoalha e joga de novo (5 iguais = General, com fogos) */
+const ART=[[78,52,-14],[122,64,20],[164,30,-28],[204,60,9],[248,24,32]];
+function renderArt(spill){
+  const v=ART.map(()=>1+Math.floor(Math.random()*6));
+  $('artDice').innerHTML=v.map((n,k)=>`<span class="die${spill&&!reduce?' spill':''}" style="left:${(ART[k][0]+8)/3}%;top:${(ART[k][1]-10)/1.12}%;transform:rotate(${ART[k][2]}deg);animation-delay:${k*.07}s">${dieSVG(n)}</span>`).join('');
+  return v;
+}
+$('art').onclick=async()=>{
+  const a=$('art');if(a.classList.contains('shake'))return;
+  audio();a.classList.add('shake');const rt=setInterval(rattle,70);await wait(reduce?150:550);clearInterval(rt);a.classList.remove('shake');
+  const v=renderArt(true);landSound();if(v.every(x=>x===v[0])){fanfare();fireworks(null)}
+};
+function renderMenu(){
+  /* Partida guardada pela metade: dá para voltar nela */
+  const g=G&&!G.over&&G.players.some(p=>Object.keys(p.sc).length)?G:null;
+  $('goCont').hidden=!g;
+  if(g)$('contSub').textContent=`${g.mode==='marcador'?'Só marcador':g.players.some(p=>p.bot)&&g.players.filter(p=>!p.bot).length===1?'Contra o computador':'Com amigos'} · ${g.players.map(p=>p.name).join(', ')}`;
+  /* O botão amarelo é o mais provável: continuar, se tiver partida; senão, contra o computador */
+  $('menu').querySelectorAll('.go').forEach(b=>b.classList.toggle('main',g?b===$('goCont'):b.dataset.flow==='bot'));
+}
+$('menu').querySelectorAll('.go[data-flow]').forEach(b=>b.onclick=()=>{
+  if(flow!==b.dataset.flow){flow=b.dataset.flow;draftBots=[];duoMode=false}
+  tone(600,.05,'triangle',.1);showScreen('setup');renderSetup();
+});
+$('goCont').onclick=()=>{G.atSetup=false;save();$('end').hidden=true;showScreen('game');setMode(true);render();maybeBot();keepAwake()};
+$('menuRules').onclick=()=>{$('rules').hidden=false};
+function toMenu(){
+  $('end').hidden=true;showScreen('menu');setMode(true);
+  /* Guarda os jogadores e o placar: ao reabrir, volta na abertura e, com os mesmos jogadores, o placar continua */
+  if(G){G.atSetup=true;save()}
+  renderMenu();
+}
+$('back').onclick=()=>{keepNames();tone(450,.05,'triangle',.1);toMenu()};
+/* Lugar de cada um na mesinha: o mesmo da mesa do tablet (com 5 a 8, em volta da mesinha) */
+const CELL={bottom:'bm',top:'tm',left:'ml',right:'mr'},TOPS={1:['tm'],2:['tl','tr'],3:['tl','tm','tr']};
+const MANY={5:['bm','ml','tl','tr','mr'],6:['bl','ml','tl','tr','mr','br'],7:['bm','bl','ml','tl','tr','mr','br'],8:['bm','bl','ml','tl','tm','tr','mr','br']};
+function cellsOf(n,bots){
+  if(n>4)return MANY[n];
+  const m=seatsOf(n,bots),out=[];
+  Object.entries(m).forEach(([side,idx])=>idx.forEach((i,k)=>out[i]=side==='top'&&idx.length>1?TOPS[idx.length][k]:CELL[side]));
+  return out;
+}
+const nameIn=(i,label)=>`<input id="nome${i}" maxlength="12" autocomplete="off" autocapitalize="words" placeholder="Jogador ${i+1}" value="${esc(draftNames[i]||'')}" aria-label="${label}">`;
 function renderSetup(){
-  $('modes').querySelectorAll('button').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.m===gameMode);b.onclick=()=>{keepNames();gameMode=b.dataset.m;tone(560,.05,'triangle',.1);renderSetup()}});
-  $('vsBot').hidden=gameMode==='marcador';
-  /* Dupla: só jogando no app (no marcador, é só dar o nome da dupla a cada cartela) */
-  if(gameMode==='marcador')duoMode=false;
-  if(duoMode)$('vsBot').hidden=true;
+  gameMode=flow==='marcador'?'marcador':'jogo';
+  /* Dupla: só jogando com amigos (no marcador, é só dar o nome da dupla a cada cartela) */
+  if(flow!=='amigos')duoMode=false;
+  if(flow==='bot'){nPlayers=1+nBots;draftBots=[false,...Array(nBots).fill(true)]}
+  else if(flow==='marcador')draftBots=[];
+  $('setTitle').textContent={bot:'Contra o computador',amigos:'Com amigos',marcador:'Só marcador'}[flow];
+  $('countAsk').textContent=flow==='bot'?'Quantos computadores?':'Quantos jogadores?';
   /* No marcador cabem até 8 jogadores; jogando no app, até 4 */
-  const counts=gameMode==='marcador'?[2,3,4,5,6,7,8]:[2,3,4];if(nPlayers>counts.at(-1))nPlayers=counts.at(-1);
+  const counts=flow==='bot'?[1,2,3]:flow==='marcador'?[2,3,4,5,6,7,8]:[2,3,4];
+  if(flow!=='bot')nPlayers=Math.min(Math.max(nPlayers,2),counts.at(-1));
   $('count').classList.toggle('many',counts.length>3);
-  $('count').innerHTML=counts.map(n=>`<button data-n="${n}" aria-pressed="${!duoMode&&n===nPlayers}">${n}</button>`).join('')+(gameMode==='jogo'?`<button class="duoBtn" data-n="duo" aria-pressed="${duoMode}" title="Jogo em duplas: cada um da dupla joga e vocês escolhem qual jogo marcar">Dupla</button>`:'');
-  $('count').querySelectorAll('button').forEach(b=>b.onclick=()=>{keepNames();duoMode=b.dataset.n==='duo';if(!duoMode)nPlayers=+b.dataset.n;tone(600,.05,'triangle',.1);renderSetup()});
+  $('count').innerHTML=counts.map(n=>`<button data-n="${n}" aria-pressed="${flow==='bot'?n===nBots:!duoMode&&n===nPlayers}">${n}</button>`).join('')+(flow==='amigos'?`<button class="duoBtn" data-n="duo" aria-pressed="${duoMode}" title="Jogo em duplas: cada um da dupla joga e vocês escolhem qual jogo marcar">Dupla</button>`:'');
+  $('count').querySelectorAll('button').forEach(b=>b.onclick=()=>{keepNames();if(flow==='bot')nBots=+b.dataset.n;else{duoMode=b.dataset.n==='duo';if(!duoMode)nPlayers=+b.dataset.n}tone(600,.05,'triangle',.1);renderSetup()});
   /* Dupla: pergunta quantas duplas (2 a 4) */
-  $('duoAsk').hidden=$('duoCount').hidden=!duoMode;
+  $('duoRow').hidden=!duoMode;
   $('duoCount').innerHTML=duoMode?[2,3,4].map(n=>`<button data-n="${n}" aria-pressed="${n===nDuos}" aria-label="${n} duplas">${n}</button>`).join(''):'';
   $('duoCount').querySelectorAll('button').forEach(b=>b.onclick=()=>{keepNames();nDuos=+b.dataset.n;tone(600,.05,'triangle',.1);renderSetup()});
-  if(duoMode){
-    $('names').innerHTML=Array.from({length:nDuos},(_,d)=>`<div class="pl duoPl"><label for="nome${d*2}">Dupla ${d+1}${isPhone()?'':' · '+sideOf(nDuos,d)}</label>
-      <div class="plrow">${[0,1].map(k=>{const i=d*2+k;return `<input id="nome${i}" maxlength="12" autocomplete="off" placeholder="Jogador ${i+1}" value="${esc(draftNames[i]||'')}" aria-label="Dupla ${d+1}, jogador ${k+1}">`}).join('')}</div></div>`).join('');
-    return;
-  }
-  const bots=Array.from({length:nPlayers},(_,i)=>gameMode==='jogo'&&!!draftBots[i]),bn=botNames(bots);
-  $('names').innerHTML=Array.from({length:nPlayers},(_,i)=>{
-    const bot=bots[i];
-    return `<div class="pl"><label for="nome${i}">Jogador ${i+1}${isPhone()||nPlayers>4?'':' · '+sideOf(nPlayers,i,bots)}</label>
-      <div class="plrow"><input id="nome${i}" maxlength="12" autocomplete="off" ${bot?`value="🤖 ${bn[i]}" disabled`:`placeholder="Jogador ${i+1}" value="${esc(draftNames[i]||'')}"`}>
-      ${gameMode==='jogo'?`<button class="kind" data-i="${i}" aria-pressed="${bot}" title="Trocar entre pessoa e computador">${bot?'🤖 Computador':'🧑 Pessoa'}</button>`:''}</div></div>`}).join('');
+  $('setTip').textContent=flow==='bot'?'Você fica embaixo e joga primeiro; os bots jogam sozinhos.'
+    :flow==='marcador'?'Joguem com copo e dados de verdade; o app só marca os pontos.'
+    :duoMode?'Cada plaquinha é uma dupla: na vez dela, os dois jogam e escolhem qual jogo marcar.'
+    :'Os lugares são como na mesa. O número mostra a ordem de jogar.';
+  const n=duoMode?nDuos:nPlayers,bots=Array.from({length:nPlayers},(_,i)=>gameMode==='jogo'&&!duoMode&&!!draftBots[i]),bn=botNames(bots);
+  const cells=cellsOf(n,duoMode||flow==='marcador'?null:bots);
+  const seat=i=>{
+    if(duoMode)return `<div class="seatSet duoSet" style="grid-area:${cells[i]}"><span class="ord">${i+1}</span>${nameIn(i*2,`Dupla ${i+1}, jogador 1`)}<span class="e">e</span>${nameIn(i*2+1,`Dupla ${i+1}, jogador 2`)}</div>`;
+    const tog=flow==='amigos'?`<button class="kind" data-i="${i}" aria-pressed="${bots[i]}">${bots[i]?'🧑 pôr pessoa':'🤖 pôr bot'}</button>`:'';
+    return bots[i]?`<div class="seatSet bot" style="grid-area:${cells[i]}"><span class="ord">${i+1}</span><div class="botName">🤖 ${bn[i]}</div>${tog}</div>`
+      :`<div class="seatSet" style="grid-area:${cells[i]}"><span class="ord">${i+1}</span>${nameIn(i,`Jogador ${i+1}`)}${tog}</div>`;
+  };
+  $('names').innerHTML=`<div class="felt" aria-hidden="true"><span class="mini">${dieSVG(5)}${dieSVG(2)}</span><small>${n} ${duoMode?'duplas':'jogadores'}</small></div>`+Array.from({length:n},(_,i)=>seat(i)).join('');
   $('names').querySelectorAll('.kind').forEach(b=>b.onclick=()=>{keepNames();const i=+b.dataset.i;draftBots[i]=!draftBots[i];tone(draftBots[i]?500:700,.05,'triangle',.1);renderSetup()});
 }
-function keepNames(){draftNames=Array.from({length:8},(_,i)=>{const el=$('nome'+i);return el&&!el.disabled?el.value:(draftNames[i]||'')})}
+function keepNames(){draftNames=Array.from({length:8},(_,i)=>{const el=$('nome'+i);return el?el.value:(draftNames[i]||'')})}
 $('start').onclick=()=>{
   keepNames();audio();
   const nm=i=>(draftNames[i]||'').trim();
@@ -696,15 +809,14 @@ $('start').onclick=()=>{
   newGame(specs,same?keepOf():null);
 };
 $('names').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'){e.preventDefault();$('start').onclick()}});
-$('vsBot').onclick=()=>{keepNames();gameMode='jogo';nPlayers=2;duoMode=false;draftBots=[false,true];renderSetup();$('start').onclick()};
 
 function newGame(specs,keep,mode=gameMode){
   if(mode==='jogo')specs=specs.slice(0,4);
   const duo=mode==='jogo'&&!!specs[0].duo;
   G={players:specs.map(s=>({name:s.name,bot:mode==='jogo'&&!!s.bot&&!duo,sc:{},...(duo?{duo:s.duo}:{})})),cur:0,duo,half:0,saved:null,pick:1,dice:[1,2,3,4,5],held:[0,0,0,0,0],rolls:0,sel:null,baixo:false,over:false,
      mode,wins:keep?keep.wins:specs.map(()=>0),games:keep?keep.games:0,hist:keep?keep.hist:[]};
-  busy=false;viewing=null;$('hint').classList.remove('flash');$('pick').hidden=true;$('setup').hidden=true;$('game').hidden=false;setMode(true);
-  save();$('end').hidden=true;$('setup').hidden=true;$('game').hidden=false;render();maybeBot();keepAwake();
+  busy=false;viewing=null;$('hint').classList.remove('flash');$('pick').hidden=true;showScreen('game');setMode(true);
+  save();$('end').hidden=true;render();maybeBot();keepAwake();
 }
 const specsOf=()=>G.players.map(p=>({name:p.name,bot:p.bot,duo:p.duo}));
 const keepOf=()=>({wins:G.wins,games:G.games,hist:G.hist});
@@ -745,13 +857,11 @@ function seatHTML(p,i){
 /* Lugar de cada jogador em volta da mesa (a vez passa no sentido horário) */
 /* A vez gira em volta da mesa (embaixo → esquerda → em cima → direita) e segue o número de cada jogador */
 const SEATS={2:{bottom:[0],top:[1]},3:{bottom:[0],top:[1],right:[2]},4:{bottom:[0],left:[1],top:[2],right:[3]}};
-const SIDE={bottom:'embaixo',top:'em cima',left:'à esquerda',right:'à direita'};
 /* Jogando sozinho contra o computador (uma pessoa só), nada vira: os computadores ficam em cima e a pessoa embaixo */
 function seatsOf(n,bots){
   if(bots&&bots.filter(b=>!b).length<=1){const me=Math.max(0,bots.indexOf(false));return {bottom:[me],top:bots.map((_,i)=>i).filter(i=>i!==me)}}
   return SEATS[n];
 }
-const sideOf=(n,i,bots)=>{const m=seatsOf(n,bots);return SIDE[Object.keys(m).find(k=>m[k].includes(i))]};
 const solo=()=>!!G&&!isScorer()&&G.players.filter(p=>!p.bot).length<=1;
 const seatMap=()=>seatsOf(G.players.length,isScorer()?null:G.players.map(p=>!!p.bot));
 const posOf=i=>{const m=seatMap();return Object.keys(m).find(k=>m[k].includes(i))||'bottom'};
@@ -1144,16 +1254,15 @@ if(!inApp&&(document.fullscreenEnabled||document.webkitFullscreenEnabled)){
 let lock=null;
 async function keepAwake(){try{if(!lock&&!$('game').hidden&&document.visibilityState==='visible'&&navigator.wakeLock){lock=await navigator.wakeLock.request('screen');lock.addEventListener('release',()=>{lock=null})}}catch(e){}}
 document.addEventListener('visibilitychange',keepAwake);
-function toSetup(){
-  $('end').hidden=true;$('game').hidden=true;$('setup').hidden=false;setMode(true);
-  /* Guarda os jogadores e o placar: ao reabrir, volta na tela inicial e, com os mesmos jogadores, o placar continua */
-  if(G){G.atSetup=true;save()}
-  renderSetup();
-}
 $('again').onclick=()=>newGame(specsOf(),keepOf(),G.mode);
-$('toSetup').onclick=()=>{fromGame(G);gameMode=G.mode||'jogo';toSetup()};
-/* Volta à tela inicial com o mesmo número de jogadores e os mesmos computadores, mas os nomes em branco (Jogador 1, Jogador 2...) */
-function fromGame(g){duoMode=!!g.duo;if(g.duo)nDuos=g.players.length;else nPlayers=g.players.length;draftNames=[];draftBots=g.players.map(p=>!!p.bot&&!g.duo)}
+$('toSetup').onclick=()=>{fromGame(G);toMenu()};
+/* Volta à abertura lembrando o jeito de jogar, quantos eram e os computadores, mas com os nomes em branco (Jogador 1, Jogador 2...) */
+function fromGame(g){
+  const bots=g.players.filter(p=>p.bot).length;
+  flow=g.mode==='marcador'?'marcador':!g.duo&&bots&&g.players.length-bots===1?'bot':'amigos';
+  duoMode=!!g.duo;if(g.duo)nDuos=g.players.length;else nPlayers=g.players.length;if(flow==='bot')nBots=bots;
+  draftNames=[];draftBots=g.players.map(p=>!!p.bot&&!g.duo);
+}
 $('rulesBtn').onclick=()=>{$('rules').hidden=false};
 $('closeRules').onclick=()=>{$('rules').hidden=true};
 let resetT=null;
@@ -1295,6 +1404,7 @@ $('newgame').onclick=()=>{
 let backT=null;
 window.bozoVoltar=()=>{
   for(const id of ['pick','exp','rules']){if(!$(id).hidden){$(id).hidden=true;return 'ok'}}
+  if(!$('setup').hidden){$('back').onclick();return 'ok'}
   if(backT){clearTimeout(backT);backT=null;return 'sair'}
   toast('Aperte voltar de novo para sair. A partida fica salva.');backT=setTimeout(()=>{backT=null},2500);return 'ok';
 };
@@ -1305,11 +1415,12 @@ setSoundLabel();setBtn('newgame','🏠','Novo jogo');setBtn('reset','↺','Zerar
 const saved=load();
 /* Reabrir o app volta exatamente onde parou: tela inicial, partida em andamento ou resumo do fim */
 const full=()=>G.players.every(x=>Object.keys(x.sc).length===NCATS);
-if(saved&&saved.atSetup){G=saved;fromGame(G);gameMode=G.mode;setMode(true);renderSetup()}
+renderArt(true);
+if(saved&&saved.atSetup){G=saved;fromGame(G);showScreen('menu');setMode(true);renderMenu()}
 else if(saved){
-  G=saved;$('setup').hidden=true;$('game').hidden=false;setMode(true);render();
+  G=saved;showScreen('game');setMode(true);render();
   if(G.over&&G.end)renderEnd();else if(G.over)showEnd(G.bocaBy??null,G.bocaBy==null&&!full());else maybeBot();
-}else{setMode(true);renderSetup()}
+}else{showScreen('menu');setMode(true);renderMenu()}
 </script>
 
 </body></html>
