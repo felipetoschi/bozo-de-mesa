@@ -4,7 +4,7 @@ Lista combinada para deixar o jogo com cara de app profissional (análise de 28/
 Marque `[x]` quando ficar pronto. A ordem é a sugerida (mais importante primeiro).
 
 ## Já feito
-- [x] Lápis riscando o papel ao marcar, atualização obrigatória, botão "Voltar ao início" no fim, feltro felpudo e copo de couro — versão 1.0.45
+- [x] Atualização obrigatória, botão "Voltar ao início" no fim e copo de couro — versão 1.0.45 (a textura de feltro foi retirada na 1.0.47, o dono não gostou)
 - [x] Sons gravados de dados (copo chacoalhando, dados caindo no feltro) — versão 1.0.43
 - [x] Vibração (chacoalhar, dados caindo, guardar dado, marcar, General) e botão para desligar — versão 1.0.43
 - [x] Só marcador: a vez passa sozinha e a lista fica na ordem da jogada — versão 1.0.41
@@ -12,6 +12,7 @@ Marque `[x]` quando ficar pronto. A ordem é a sugerida (mais importante primeir
 - [x] Tela inicial nova: abertura com três botões e jogadores em volta de uma mesinha — versão 1.0.37
 
 ## Próximos passos
+0. [ ] **Som gravado de lápis anotando** ao marcar — o som feito pelo app não ficou bom; falta um arquivo de som de verdade.
 1. [ ] **Confirmação ao cortar** — "Cortar General? Vale zero". Evita o erro bobo sem mudar a regra de não poder desfazer.
 2. [ ] **Testes automáticos guardados no projeto** — os testes de tela e de partida rodando sozinhos a cada mudança, para nada quebrar sem ninguém perceber.
 3. [ ] **Fotos novas da loja + Play Store** — tirar capturas da tela nova e seguir o `PUBLICAR.md` (passos 3 a 7). Recomendação: grátis e sem anúncios no começo.
