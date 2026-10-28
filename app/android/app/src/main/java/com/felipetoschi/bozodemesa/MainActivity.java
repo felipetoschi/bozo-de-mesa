@@ -10,6 +10,8 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         // Plugin próprio para mandar o resultado (imagem ou texto) direto para o WhatsApp
         registerPlugin(CompartilharPlugin.class);
+        // Plugin próprio para vibrar (chacoalhar o copo, dados caindo, General)
+        registerPlugin(VibrarPlugin.class);
         super.onCreate(savedInstanceState);
         // Jogo de mesa: a tela não apaga enquanto o app está aberto
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
