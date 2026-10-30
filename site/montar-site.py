@@ -16,7 +16,7 @@ www, site, dist = raiz / "app" / "www", raiz / "site", raiz / "dist"
 
 shutil.rmtree(dist, ignore_errors=True)
 shutil.copytree(www, dist)
-for nome in ["privacidade.html", "piano.html", "manifest.webmanifest", "icone-192.png", "icone-512.png", "apple-touch-icon.png"]:
+for nome in ["privacidade.html", "manifest.webmanifest", "icone-192.png", "icone-512.png", "apple-touch-icon.png"]:
     shutil.copy(site / nome, dist / nome)
 
 jogo = (www / "index.html").read_text(encoding="utf-8")
